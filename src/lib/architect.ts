@@ -30,7 +30,7 @@ export const getInfraStatus = createServerFn({ method: "GET" }).handler(
       name: "QwenCloud",
       role: "한국어 초안 · 개인화",
       live: envOn("DASHSCOPE_API_KEY", "QWEN_API_KEY"),
-      fallback: "Grok 4.5",
+      fallback: "Grok 4.5 · 키 없으면 로컬 데모",
     },
     {
       id: "nosana",
@@ -40,7 +40,7 @@ export const getInfraStatus = createServerFn({ method: "GET" }).handler(
         envOn("NOSANA_API_KEY", "NOSANA_API_TOKEN") &&
         envOn("NOSANA_MARKET") &&
         envOn("NOSANA_SCORE_IMAGE", "NOSANA_GPU_IMAGE"),
-      fallback: "Qwen/Grok 점수 (market·image 설정 필요)",
+      fallback: "Qwen/Grok/로컬 점수 (market·image 설정 필요)",
     },
     {
       id: "daytona",
@@ -351,7 +351,6 @@ export type ArchitectResult = {
 export const runArchitect = createServerFn({ method: "POST" })
   .validator((input: unknown) => runInput.parse(input))
   .handler(async ({ data }): Promise<ArchitectResult> => {
-    console.log("[architect] start", data.name);
     const steps: ArchitectStep[] = [];
 
     let intel = data.signal;
@@ -413,7 +412,6 @@ export const runArchitect = createServerFn({ method: "POST" })
       ],
       500,
     );
-    console.log("[architect] draft", draftRes.ok, draftRes.ok ? draftRes.provider : draftRes.error);
     if (!draftRes.ok) {
       steps.push({
         id: "qwen",
@@ -468,7 +466,6 @@ export const runArchitect = createServerFn({ method: "POST" })
     }
 
     const nosanaScore = await runNosanaScore({ name: data.name, intel, draft });
-    console.log("[architect] score", nosanaScore?.via || "fallback");
     if (nosanaScore) {
       score = nosanaScore.score;
       label = nosanaScore.label;
@@ -485,7 +482,6 @@ export const runArchitect = createServerFn({ method: "POST" })
 
     const t3 = Date.now();
     const policy = await runDaytonaPolicy(draft, data.doNot);
-    console.log("[architect] policy", policy.via);
     steps.push({
       id: "daytona",
       label: "정책 샌드박스",
@@ -495,7 +491,7 @@ export const runArchitect = createServerFn({ method: "POST" })
       detail: policy.pass ? "금지 조항 통과" : policy.hits.join(", "),
     });
 
-    const result = {
+    return {
       ok: true,
       steps,
       intel: intel.slice(0, 1200),
@@ -506,6 +502,4 @@ export const runArchitect = createServerFn({ method: "POST" })
       policyPass: policy.pass,
       policyHits: policy.hits,
     };
-    console.log("[architect] done");
-    return result;
   });
