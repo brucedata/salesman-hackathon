@@ -20,20 +20,36 @@ function readMessage(body: unknown) {
 }
 
 function localDemoResponse(messages: ChatMessage[], json: boolean) {
+  const userMessage = messages.at(-1)?.content ?? "";
+  const target =
+    userMessage.match(/(?:Name|Target):\s*([^\n(]+)/i)?.[1]?.trim() || "there";
+  const isInboxAnalysis = messages.some((message) => message.content.includes("intentScore"));
+
+  if (json && isInboxAnalysis) {
+    return JSON.stringify({
+      intentScore: 58,
+      intentLabel: "Interested",
+      nextAction: "Review the response draft and confirm the best time to follow up.",
+      reasons: ["Clear project need", "Timeline or budget signal is present"],
+      draft: `Hi ${target}, thanks for reaching out to Han Studio. I am sorry we missed your message while we were with another client. I can confirm the relevant scope and next available start date after a short consultation. You can choose a time here: https://cal.com/hanstudio/30min. Please share the best time to reply, and I will follow up promptly.`,
+      replyChannel: /Channel:\s*(phone|message)/i.test(userMessage) ? "sms" : "email",
+      productId: "p_identity",
+    });
+  }
+
   if (json) {
     return JSON.stringify({
       score: 58,
-      label: "관심",
-      next: "대표가 초안을 검수한 뒤 짧은 확인 메시지를 보내세요.",
+      label: "Interested",
+      next: "Review the draft and confirm a practical follow-up time.",
     });
   }
-  const userMessage = messages.at(-1)?.content ?? "문의 주신 내용";
-  const target = userMessage.match(/대상:\s*([^\n]+)/)?.[1]?.trim() || "문의 주신 내용";
+
   return [
-    `안녕하세요, ${target} 관련 소식 잘 보았습니다.`,
-    "현재 상황에 맞춰 바로 적용할 수 있는 작은 실행안을 먼저 제안드리고 싶습니다.",
-    "필요하신 범위와 일정에 맞춰 내용을 간단히 정리해 드릴 수 있습니다.",
-    "괜찮으시면 이번 주 중 10분 정도 통화나 메시지로 현재 계획을 여쭤봐도 될까요?",
+    `Hi ${target}, I noticed the work you are preparing and wanted to reach out directly.`,
+    "Han Studio can help turn the immediate need into a focused, usable first deliverable.",
+    "We can begin by confirming the scope, schedule, and the materials you already have.",
+    "If a short conversation would help, you can choose a time at https://cal.com/hanstudio/30min.",
   ].join(" ");
 }
 
@@ -54,7 +70,7 @@ export async function chatComplete(
 
   if (qwenKey) {
     try {
-      const res = await fetch(`${qwenBaseUrl()}/chat/completions`, {
+      const response = await fetch(`${qwenBaseUrl()}/chat/completions`, {
         method: "POST",
         signal: AbortSignal.timeout(30_000),
         headers: {
@@ -70,15 +86,16 @@ export async function chatComplete(
         }),
       });
 
-      if (res.ok) {
-        const text = readMessage(await res.json());
+      if (response.ok) {
+        const text = readMessage(await response.json());
         if (text) return { ok: true, text, provider: "qwen" };
-        qwenError = "Qwen 빈 응답";
+        qwenError = "Qwen returned an empty response.";
       } else {
-        qwenError = `Qwen ${res.status}`;
+        qwenError = `Qwen request failed (${response.status}).`;
       }
     } catch (error) {
-      qwenError = error instanceof Error ? `Qwen 연결 실패: ${error.message}` : "Qwen 연결 실패";
+      qwenError =
+        error instanceof Error ? `Qwen connection failed: ${error.message}` : "Qwen connection failed.";
     }
   }
 
@@ -87,11 +104,11 @@ export async function chatComplete(
     if (!qwenKey) {
       return { ok: true, text: localDemoResponse(messages, Boolean(options.json)), provider: "local" };
     }
-    return { ok: false, error: qwenError || "Qwen/Grok 키가 없습니다." };
+    return { ok: false, error: qwenError || "No Qwen or Grok provider is available." };
   }
 
   try {
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       signal: AbortSignal.timeout(30_000),
       headers: {
@@ -107,10 +124,15 @@ export async function chatComplete(
       }),
     });
 
-    if (!res.ok) return { ok: false, error: `Grok ${res.status}` };
-    const text = readMessage(await res.json());
-    return text ? { ok: true, text, provider: "grok" } : { ok: false, error: "빈 응답" };
+    if (!response.ok) return { ok: false, error: `Grok request failed (${response.status}).` };
+    const text = readMessage(await response.json());
+    return text
+      ? { ok: true, text, provider: "grok" }
+      : { ok: false, error: "Grok returned an empty response." };
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "Grok 연결 실패" };
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Grok connection failed.",
+    };
   }
 }

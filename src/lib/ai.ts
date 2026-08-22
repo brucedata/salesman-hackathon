@@ -29,55 +29,57 @@ const draftInput = z.object({
   }),
 });
 
-export type DraftResult = {
-  ok: true;
-  intentScore: number;
-  intentLabel: string;
-  nextAction: string;
-  reasons: string[];
-  draft: string;
-  replyChannel: "email" | "sms";
-  productId: string | null;
-} | { ok: false; error: string };
+export type DraftResult =
+  | {
+      ok: true;
+      intentScore: number;
+      intentLabel: string;
+      nextAction: string;
+      reasons: string[];
+      draft: string;
+      replyChannel: "email" | "sms";
+      productId: string | null;
+    }
+  | { ok: false; error: string };
 
 export const analyzeAndDraft = createServerFn({ method: "POST" })
   .validator((input: unknown) => draftInput.parse(input))
   .handler(async ({ data }): Promise<DraftResult> => {
     const catalog = data.products
       .map(
-        (p) =>
-          `- ${p.id} | ${p.name} | ${p.price.toLocaleString("ko-KR")}원${p.period ? "/" + p.period : ""} | ${p.summary} | 상담:${p.consultUrl} | 결제:${p.paymentUrl}`,
+        (product) =>
+          `- ${product.id} | ${product.name} | KRW ${product.price.toLocaleString("en-US")}${product.period ? "/" + product.period : ""} | ${product.summary} | Consultation: ${product.consultUrl} | Payment: ${product.paymentUrl}`,
       )
       .join("\n");
 
-    const system = `당신은 ${data.companyName}의 응대 에이전트입니다. 1인 대표 ${data.founderName}와 작업자가 일하느라 놓친 전화·이메일·메시지를 대신 잡고 초안을 씁니다.
-상품 정책을 반드시 지키세요.
-톤: ${data.tone}
-환불: ${data.refund}
-납기: ${data.delivery}
-금지: ${data.doNot.join(" / ")}
-${data.lead.missed ? "이 문의는 놓친 연락입니다. 초안 첫 줄에서 짧게 사과하고(변명 금지), 지금 이어서 대응하세요." : ""}
+    const system = `You are the sales response agent for ${data.companyName}. ${data.founderName} works alone and needs concise, truthful drafts for calls, emails, website inquiries, and messages.
+Follow this policy exactly:
+Tone: ${data.tone}
+Refunds: ${data.refund}
+Delivery: ${data.delivery}
+Do not: ${data.doNot.join(" / ")}
+${data.lead.missed ? "This was a missed inquiry. Start with a brief acknowledgement without making excuses, then show that the inquiry is being handled now." : ""}
 
-카탈로그:
+Catalog:
 ${catalog}
 
-출력은 JSON 하나만. 키:
-intentScore (0-100 정수),
-intentLabel (낮음|관심|구매의도|즉시구매 중 하나),
-nextAction (대표/작업자가 지금 할 한 줄),
-reasons (문자열 배열, 최대 4),
-draft (고객에게 보낼 본문. 전화·메시지면 문자/카카오처럼 짧게, 이메일·웹이면 이메일 본문. 상담 URL과 결제 URL을 정책에 맞게 포함. 금지 조항 위반 금지),
-replyChannel (email|sms),
-productId (카탈로그 id 또는 null).`;
+Return JSON only with these fields:
+intentScore (integer 0-100),
+intentLabel (one of Low, Interested, Purchase intent, Ready to buy),
+nextAction (the next action for the studio owner),
+reasons (array of at most 4 short strings),
+draft (the customer-facing English message. Use a concise SMS style for phone/message; use an email body for email/web. Include the right consultation and payment URL when an offer is a clear fit. Never violate the policy),
+replyChannel (email or sms),
+productId (a catalog id or null).`;
 
-    const user = `채널: ${data.lead.channel}
-놓친 문의: ${data.lead.missed ? "예" : "아니오"}
-이름: ${data.lead.name}
-연락처: ${data.lead.contact}
-문의:
+    const user = `Channel: ${data.lead.channel}
+Missed inquiry: ${data.lead.missed ? "yes" : "no"}
+Name: ${data.lead.name}
+Contact: ${data.lead.contact}
+Inquiry:
 ${data.lead.message}`;
 
-    const res = await chatComplete(
+    const response = await chatComplete(
       [
         { role: "system", content: system },
         { role: "user", content: user },
@@ -85,21 +87,20 @@ ${data.lead.message}`;
       900,
       { json: true },
     );
-    if (!res.ok) return { ok: false, error: `분석 실패: ${res.error}` };
+    if (!response.ok) return { ok: false, error: `Analysis failed: ${response.error}` };
 
-    const raw = res.text;
     let parsed: Record<string, unknown> = {};
     try {
-      parsed = JSON.parse(raw) as Record<string, unknown>;
+      parsed = JSON.parse(response.text) as Record<string, unknown>;
     } catch {
-      return { ok: false, error: "AI 응답을 해석하지 못했습니다." };
+      return { ok: false, error: "Could not parse the AI response." };
     }
 
     const score = Math.max(0, Math.min(100, Number(parsed.intentScore) || 0));
-    const label = String(parsed.intentLabel ?? "관심");
-    const nextAction = String(parsed.nextAction ?? "대표가 초안을 검수하세요.");
+    const label = String(parsed.intentLabel ?? "Interested");
+    const nextAction = String(parsed.nextAction ?? "Review the draft before sending.");
     const reasons = Array.isArray(parsed.reasons)
-      ? parsed.reasons.map((r) => String(r)).slice(0, 4)
+      ? parsed.reasons.map((reason) => String(reason)).slice(0, 4)
       : [];
     const draft = String(parsed.draft ?? "");
     const replyChannel = parsed.replyChannel === "sms" ? "sms" : "email";
@@ -129,9 +130,11 @@ export const transcribeVoice = createServerFn({ method: "POST" })
   .validator((input: unknown) => transcribeInput.parse(input))
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) return { ok: false, error: "AI를 이 환경에서 사용할 수 없습니다." };
+    if (!apiKey) {
+      return { ok: false, error: "Speech transcription is not configured for this environment." };
+    }
 
-    const bin = Uint8Array.from(atob(data.audioBase64), (c) => c.charCodeAt(0));
+    const bin = Uint8Array.from(atob(data.audioBase64), (character) => character.charCodeAt(0));
     const ext = data.mimeType.includes("mp4")
       ? "mp4"
       : data.mimeType.includes("mpeg")
@@ -143,21 +146,21 @@ export const transcribeVoice = createServerFn({ method: "POST" })
             : "webm";
     const blob = new Blob([bin], { type: data.mimeType || "audio/webm" });
     const form = new FormData();
-    form.append("language", "ko");
+    form.append("language", "en");
     form.append("format", "true");
     form.append("file", blob, `voicemail.${ext}`);
 
-    const res = await fetch("https://api.x.ai/v1/stt", {
+    const response = await fetch("https://api.x.ai/v1/stt", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}` },
       body: form,
     });
-    if (!res.ok) {
-      return { ok: false, error: `음성 변환 실패 (${res.status})` };
+    if (!response.ok) {
+      return { ok: false, error: `Speech transcription failed (${response.status}).` };
     }
-    const out = (await res.json()) as { text?: string };
-    const text = (out.text ?? "").trim();
-    if (!text) return { ok: false, error: "음성을 텍스트로 바꾸지 못했습니다." };
+    const output = (await response.json()) as { text?: string };
+    const text = (output.text ?? "").trim();
+    if (!text) return { ok: false, error: "Speech transcription returned no text." };
     return { ok: true, text };
   });
 
@@ -179,23 +182,24 @@ const outreachInput = z.object({
 export const generateOutreach = createServerFn({ method: "POST" })
   .validator((input: unknown) => outreachInput.parse(input))
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
-    const res = await chatComplete(
+    const response = await chatComplete(
       [
         {
           role: "system",
-          content: `${data.companyName} 대표 ${data.founderName}의 첫 연락 문자를 씁니다. 톤: ${data.tone}
-금지: ${data.doNot.join(" / ")}
-상품: ${data.productName} — ${data.productSummary}
-상담: ${data.consultUrl}
-한국어, 6~10문장, 과장 없이 구체적. JSON 없이 본문만.`,
+          content: `Write a first English outreach message from ${data.companyName} and ${data.founderName}.
+Tone: ${data.tone}
+Do not: ${data.doNot.join(" / ")}
+Offer: ${data.productName} - ${data.productSummary}
+Consultation: ${data.consultUrl}
+Write 6-10 direct, specific sentences. Avoid hype. Return only the message body, not JSON.`,
         },
         {
           role: "user",
-          content: `대상: ${data.prospect.name} (${data.prospect.area})\n관찰: ${data.prospect.signal}`,
+          content: `Target: ${data.prospect.name} (${data.prospect.area})\nObserved signal: ${data.prospect.signal}`,
         },
       ],
       400,
     );
-    if (!res.ok) return { ok: false, error: `초안 실패: ${res.error}` };
-    return { ok: true, text: res.text };
+    if (!response.ok) return { ok: false, error: `Draft failed: ${response.error}` };
+    return { ok: true, text: response.text };
   });

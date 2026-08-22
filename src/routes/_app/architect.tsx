@@ -17,11 +17,11 @@ export const Route = createFileRoute("/_app/architect")({ component: ArchitectPa
 
 function ArchitectPage() {
   const navigate = useNavigate();
-  const policy = useStudio((s) => s.policy);
-  const products = useStudio((s) => s.products);
-  const prospects = useStudio((s) => s.prospects);
-  const patchProspect = useStudio((s) => s.patchProspect);
-  const upsertLead = useStudio((s) => s.upsertLead);
+  const policy = useStudio((state) => state.policy);
+  const products = useStudio((state) => state.products);
+  const prospects = useStudio((state) => state.prospects);
+  const patchProspect = useStudio((state) => state.patchProspect);
+  const upsertLead = useStudio((state) => state.upsertLead);
   const [status, setStatus] = useState<ProviderStatus[]>([]);
   const [busy, setBusy] = useState(false);
   const [targetId, setTargetId] = useState(prospects[0]?.id ?? "");
@@ -33,14 +33,14 @@ function ArchitectPage() {
   }, []);
 
   const product = products[0];
-  const target = prospects.find((p) => p.id === targetId) ?? prospects[0];
+  const target = prospects.find((prospect) => prospect.id === targetId) ?? prospects[0];
 
   async function run() {
     if (!target || !product) return;
     setBusy(true);
     setResult(null);
     try {
-      const res = await runArchitect({
+      const response = await runArchitect({
         data: {
           name: target.name,
           area: target.area,
@@ -58,13 +58,13 @@ function ArchitectPage() {
           paymentUrl: product.paymentUrl,
         },
       });
-      if (!res.ok) {
-        toast.error(res.error);
+      if (!response.ok) {
+        toast.error(response.error);
         return;
       }
-      setResult(res);
-      patchProspect(target.id, { draft: res.draft });
-      toast("파이프라인 완료. 초안이 아웃리치에 반영됐습니다.");
+      setResult(response);
+      patchProspect(target.id, { draft: response.draft });
+      toast("Pipeline complete. The draft is now in Outreach.");
     } finally {
       setBusy(false);
     }
@@ -73,24 +73,23 @@ function ArchitectPage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-3xl md:text-4xl">아키텍트</h1>
+        <h1 className="text-3xl md:text-4xl">Architect</h1>
         <p className="mt-1 text-sm text-muted">
-          Bright Data로 모으고, Qwen이 쓰고, Nosana GPU가 점수를 매기고, Daytona가 정책을 검사합니다.
-          크레딧 키가 없으면 표시된 폴백으로 같은 순서를 돌립니다.
+          Bright Data collects, Qwen drafts, Nosana scores, and Daytona checks policy when those providers are configured. Without credentials, the visible fallback runs the same sequence locally.
         </p>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {status.map((p) => (
+        {status.map((provider) => (
           <article
-            key={p.id}
+            key={provider.id}
             className="rounded-xl bg-raised p-4 shadow-[0_0_0_1px_var(--color-line)]"
           >
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-faint">{p.id}</p>
-            <h2 className="mt-1 text-lg">{p.name}</h2>
-            <p className="mt-1 text-sm text-muted">{p.role}</p>
-            <p className={`mt-3 text-xs font-medium ${p.live ? "text-good" : "text-warn"}`}>
-              {p.live ? "크레딧 연결됨" : `폴백 · ${p.fallback}`}
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-faint">{provider.id}</p>
+            <h2 className="mt-1 text-lg">{provider.name}</h2>
+            <p className="mt-1 text-sm text-muted">{provider.role}</p>
+            <p className={`mt-3 text-xs font-medium ${provider.live ? "text-good" : "text-warn"}`}>
+              {provider.live ? "Configured" : `Fallback - ${provider.fallback}`}
             </p>
           </article>
         ))}
@@ -99,63 +98,58 @@ function ArchitectPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <form
           className="space-y-4 rounded-xl bg-raised p-5 shadow-[0_0_0_1px_var(--color-line)]"
-          onSubmit={(e) => {
-            e.preventDefault();
+          onSubmit={(event) => {
+            event.preventDefault();
             void run();
           }}
         >
-          <h2 className="text-xl">파이프라인 실행</h2>
+          <h2 className="text-xl">Run pipeline</h2>
           <div>
-            <Label htmlFor="target">대상</Label>
+            <Label htmlFor="target">Target</Label>
             <select
               id="target"
               className="h-11 w-full rounded-md bg-surface px-3 text-sm shadow-[0_0_0_1px_var(--color-line)]"
               value={target?.id}
-              onChange={(e) => setTargetId(e.target.value)}
+              onChange={(event) => setTargetId(event.target.value)}
             >
-              {prospects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} · {p.area}
+              {prospects.map((prospect) => (
+                <option key={prospect.id} value={prospect.id}>
+                  {prospect.name} - {prospect.area}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <Label htmlFor="url">공개 URL (선택 · Bright Data / 수집)</Label>
-            <Input
-              id="url"
-              value={url}
-              placeholder="https://"
-              onChange={(e) => setUrl(e.target.value)}
-            />
+            <Label htmlFor="url">Public URL (optional, for Bright Data collection)</Label>
+            <Input id="url" value={url} placeholder="https://" onChange={(event) => setUrl(event.target.value)} />
           </div>
           <p className="text-xs text-faint">{target?.signal}</p>
           <Button type="submit" disabled={busy}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : null}
-            아키텍트 실행
+            Run Architect
           </Button>
         </form>
 
         <section className="rounded-xl bg-raised p-5 shadow-[0_0_0_1px_var(--color-line)]">
-          <h2 className="text-xl">런 로그</h2>
+          <h2 className="text-xl">Run log</h2>
           {!result && !busy ? (
-            <p className="mt-3 text-sm text-muted">실행하면 네 단계가 순서대로 기록됩니다.</p>
+            <p className="mt-3 text-sm text-muted">Run it to record the four steps in sequence.</p>
           ) : null}
-          {busy ? <p className="mt-3 text-sm text-navy">수집 → 초안 → 점수 → 정책…</p> : null}
+          {busy ? <p className="mt-3 text-sm text-navy">Collecting, drafting, scoring, checking policy...</p> : null}
           {result ? (
             <ol className="mt-4 space-y-3">
-              {result.steps.map((s, i) => (
-                <li key={s.id} className="flex gap-3 text-sm">
-                  <span className="tabular-nums text-faint">{i + 1}</span>
+              {result.steps.map((step, index) => (
+                <li key={step.id} className="flex gap-3 text-sm">
+                  <span className="tabular-nums text-faint">{index + 1}</span>
                   <div>
                     <p className="font-medium">
-                      {s.label}
-                      <span className={`ml-2 text-xs ${s.ok ? "text-good" : "text-bad"}`}>
-                        {s.ok ? "ok" : "fail"}
+                      {step.label}
+                      <span className={`ml-2 text-xs ${step.ok ? "text-good" : "text-bad"}`}>
+                        {step.ok ? "ok" : "fail"}
                       </span>
                     </p>
                     <p className="text-muted">
-                      {s.via} · {s.ms}ms · {s.detail}
+                      {step.via} - {step.ms}ms - {step.detail}
                     </p>
                   </div>
                 </li>
@@ -165,21 +159,16 @@ function ArchitectPage() {
           {result ? (
             <div className="mt-6 space-y-3">
               <p className="text-sm">
-                의도 <span className="tabular-nums font-medium text-navy">{result.score}</span> ·{" "}
-                {result.label}
+                Intent <span className="tabular-nums font-medium text-navy">{result.score}</span> - {result.label}
               </p>
               <p className="text-sm text-muted">{result.nextAction}</p>
               <p className={`text-sm ${result.policyPass ? "text-good" : "text-bad"}`}>
-                정책 {result.policyPass ? "통과" : result.policyHits.join(", ")}
+                Policy: {result.policyPass ? "Passed" : result.policyHits.join(", ")}
               </p>
               <Textarea readOnly className="min-h-40" value={result.draft} />
               <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void navigate({ to: "/outreach" })}
-                >
-                  아웃리치에서 보기
+                <Button size="sm" variant="outline" onClick={() => void navigate({ to: "/outreach" })}>
+                  View in Outreach
                 </Button>
                 <Button
                   size="sm"
@@ -187,7 +176,7 @@ function ArchitectPage() {
                     const id = uid("ld");
                     upsertLead({
                       id,
-                      name: target?.name ?? "아키텍트 리드",
+                      name: target?.name ?? "Architect lead",
                       contact: "architect@salesman",
                       channel: "web",
                       message: result.intel,
@@ -195,7 +184,7 @@ function ArchitectPage() {
                       intentScore: result.score,
                       intentLabel: result.label,
                       nextAction: result.nextAction,
-                      reasons: ["아키텍트 파이프라인"],
+                      reasons: ["Architect pipeline"],
                       draft: result.draft,
                       replyChannel: "email",
                       stage: result.policyPass ? "awaiting_approval" : "new",
@@ -213,11 +202,11 @@ function ArchitectPage() {
                         },
                       ],
                     });
-                    toast("수신함 승인 대기로 올렸습니다.");
+                    toast("Moved to inbox approval queue.");
                     void navigate({ to: "/inbox/$leadId", params: { leadId: id } });
                   }}
                 >
-                  수신함으로 올리기
+                  Add to inbox
                 </Button>
               </div>
             </div>

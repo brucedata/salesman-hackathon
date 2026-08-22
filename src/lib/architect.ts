@@ -13,7 +13,7 @@ export type ProviderStatus = {
 };
 
 function envOn(...keys: string[]) {
-  return keys.some((k) => Boolean(process.env[k]?.trim()));
+  return keys.some((key) => Boolean(process.env[key]?.trim()));
 }
 
 export const getInfraStatus = createServerFn({ method: "GET" }).handler(
@@ -21,33 +21,33 @@ export const getInfraStatus = createServerFn({ method: "GET" }).handler(
     {
       id: "brightdata",
       name: "Bright Data",
-      role: "웹 수집 · 경쟁 페이지 · 시그널",
+      role: "Web collection, competitor pages, and signals",
       live: envOn("BRIGHTDATA_API_TOKEN", "BRIGHT_DATA_API_KEY", "BRIGHTDATA_API_KEY"),
-      fallback: "서버 측 공개 URL 수집",
+      fallback: "Direct server-side fetch of public URLs",
     },
     {
       id: "qwen",
-      name: "QwenCloud",
-      role: "한국어 초안 · 개인화",
+      name: "Qwen",
+      role: "English drafts and personalization",
       live: envOn("DASHSCOPE_API_KEY", "QWEN_API_KEY"),
-      fallback: "Grok 4.5 · 키 없으면 로컬 데모",
+      fallback: "Grok or local demo response",
     },
     {
       id: "nosana",
       name: "Nosana GPU",
-      role: "의도 점수 · 배치 추론",
+      role: "Intent scoring and batch inference",
       live:
         envOn("NOSANA_API_KEY", "NOSANA_API_TOKEN") &&
         envOn("NOSANA_MARKET") &&
         envOn("NOSANA_SCORE_IMAGE", "NOSANA_GPU_IMAGE"),
-      fallback: "Qwen/Grok/로컬 점수 (market·image 설정 필요)",
+      fallback: "Qwen, Grok, or local scoring",
     },
     {
       id: "daytona",
       name: "Daytona",
-      role: "정책 린트 · 격리 실행",
+      role: "Policy lint in isolated execution",
       live: envOn("DAYTONA_API_KEY", "DAYTONA_API_TOKEN"),
-      fallback: "인프로세스 샌드박스",
+      fallback: "In-process policy sandbox",
     },
   ],
 );
@@ -92,15 +92,15 @@ function collectSignals(raw: string): Omit<CollectedPage, "via"> {
     const parsed = JSON.parse(raw) as unknown;
     source = typeof parsed === "string" ? parsed : JSON.stringify(parsed);
   } catch {
-    /* Bright Data may return raw HTML. */
+    // Bright Data may return raw HTML.
   }
   const title = source.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? null;
   const text = stripHtml(source);
   const priceLike = Array.from(
-    new Set(text.match(/(?:₩|KRW\s?|\$)\s?[\d,]+|[\d,]+\s?원/g) ?? []),
+    new Set(text.match(/(?:KRW\s?|\$)\s?[\d,]+|[\d,]+\s?(?:KRW|won)\b/gi) ?? []),
   ).slice(0, 8);
   const ctas = Array.from(
-    new Set(text.match(/(?:문의하기|상담하기|예약하기|구매하기|신청하기|contact|book|buy|apply)/gi) ?? []),
+    new Set(text.match(/(?:contact|consult|book|buy|apply|request|inquire)/gi) ?? []),
   ).slice(0, 6);
   return { text, title, priceLike, ctas };
 }
@@ -113,7 +113,7 @@ async function collectPage(url: string): Promise<CollectedPage> {
   if (token) {
     const zone = process.env.BRIGHTDATA_ZONE || "web_unlocker1";
     try {
-      const res = await fetch("https://api.brightdata.com/request", {
+      const response = await fetch("https://api.brightdata.com/request", {
         method: "POST",
         signal: AbortSignal.timeout(20_000),
         headers: {
@@ -122,30 +122,33 @@ async function collectPage(url: string): Promise<CollectedPage> {
         },
         body: JSON.stringify({ zone, url, format: "raw" }),
       });
-      if (res.ok) return { ...collectSignals(await res.text()), via: "brightdata" };
+      if (response.ok) return { ...collectSignals(await response.text()), via: "brightdata" };
     } catch {
-      /* Fall through to the public URL fetch below. */
+      // Fall through to direct public URL collection.
     }
   }
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     signal: AbortSignal.timeout(20_000),
     headers: { "User-Agent": "SalesmanArchitect/1.0" },
     redirect: "follow",
   });
-  if (!res.ok) throw new Error(`수집 실패 (${res.status})`);
-  return { ...collectSignals(await res.text()), via: "direct-fetch" };
+  if (!response.ok) throw new Error(`Collection failed (${response.status}).`);
+  return { ...collectSignals(await response.text()), via: "direct-fetch" };
 }
 
 function policySandbox(draft: string, doNot: string[]) {
   const hits: string[] = [];
-  if (/(계좌|입금|국민은행|카카오뱅크|우리은행)\s*\d/.test(draft)) {
-    hits.push("개인 계좌 숫자 안내");
+  const hasRule = (keyword: string) =>
+    doNot.some((rule) => rule.toLowerCase().includes(keyword));
+
+  if (/(bank\s+account|account\s+number|wire\s+transfer|routing\s+number)/i.test(draft)) {
+    hits.push("Personal bank details");
   }
-  if (/\d{1,2}\s*%/.test(draft) && doNot.some((d) => d.includes("할인"))) {
-    hits.push("승인 전 할인율");
+  if (/\d{1,2}\s*%/.test(draft) && hasRule("discount")) {
+    hits.push("Unapproved discount");
   }
-  if (doNot.some((rule) => rule.includes("경쟁") && /(최악|쓰레기|사기)/.test(draft))) {
-    hits.push("경쟁사 비방");
+  if (hasRule("competitor") && /(worst|trash|scam|fraud)/i.test(draft)) {
+    hits.push("Competitor disparagement");
   }
   return { pass: hits.length === 0, hits };
 }
@@ -180,15 +183,19 @@ async function runDaytonaPolicy(draft: string, doNot: string[]): Promise<PolicyR
       },
       { timeout: 30 },
     );
+    const policyScript = [
+      "import json, os, re",
+      "draft = os.environ.get('SALESMAN_DRAFT', '')",
+      "rules = json.loads(os.environ.get('SALESMAN_RULES', '[]'))",
+      "rules_lower = [str(rule).lower() for rule in rules]",
+      "hits = []",
+      "if re.search(r'(bank\\s+account|account\\s+number|wire\\s+transfer|routing\\s+number)', draft, re.I): hits.append('Personal bank details')",
+      "if re.search(r'\\d{1,2}\\s*%', draft) and any('discount' in rule for rule in rules_lower): hits.append('Unapproved discount')",
+      "if any('competitor' in rule for rule in rules_lower) and re.search(r'(worst|trash|scam|fraud)', draft, re.I): hits.append('Competitor disparagement')",
+      "print(json.dumps({'pass': len(hits) == 0, 'hits': hits}))",
+    ].join("\\n");
     const response = await sandbox.process.codeRun(
-      "import json, os, re\n"
-        + "draft = os.environ.get('SALESMAN_DRAFT', '')\n"
-        + "rules = json.loads(os.environ.get('SALESMAN_RULES', '[]'))\n"
-        + "hits = []\n"
-        + "if re.search(r'(계좌|입금|국민은행|카카오뱅크|우리은행)\\s*\\d', draft): hits.append('개인 계좌 숫자 안내')\n"
-        + "if re.search(r'\\d{1,2}\\s*%', draft) and any('할인' in rule for rule in rules): hits.append('승인 전 할인율')\n"
-        + "if any('경쟁' in rule for rule in rules) and re.search(r'(최악|쓰레기|사기)', draft): hits.append('경쟁사 비방')\n"
-        + "print(json.dumps({'pass': len(hits) == 0, 'hits': hits}, ensure_ascii=False))",
+      policyScript,
       { env: { SALESMAN_DRAFT: draft, SALESMAN_RULES: JSON.stringify(doNot) } },
       10,
     );
@@ -214,7 +221,7 @@ async function runDaytonaPolicy(draft: string, doNot: string[]): Promise<PolicyR
         });
         await daytona.delete(sandbox);
       } catch {
-        /* Cleanup failure must not hide the policy result. */
+        // Cleanup failure must not hide the policy result.
       }
     }
   }
@@ -237,10 +244,10 @@ function scoreFromPayload(payload: unknown): NosanaScore | null {
     if (typeof parsed.score !== "number") return null;
     return {
       score: Math.max(0, Math.min(100, Math.round(parsed.score))),
-      label: String(parsed.label || "관심"),
-      nextAction: String(parsed.next || "대표가 초안을 검수하세요."),
+      label: String(parsed.label || "Interested"),
+      nextAction: String(parsed.next || "Review the draft before sending."),
       via: "nosana-job",
-      detail: "GPU job 결과",
+      detail: "GPU job result",
     };
   } catch {
     return null;
@@ -300,10 +307,10 @@ async function runNosanaScore(input: {
     }
     return {
       score: 50,
-      label: "관심",
-      nextAction: "Nosana GPU job이 실행 중입니다. 대표가 초안을 먼저 검수하세요.",
+      label: "Interested",
+      nextAction: "The Nosana job is still queued. Review the outreach draft first.",
       via: "nosana-queued",
-      detail: `job ${posted.job} 대기 중`,
+      detail: `Job ${posted.job} is still queued`,
     };
   } catch {
     return null;
@@ -336,17 +343,19 @@ export type ArchitectStep = {
   detail: string;
 };
 
-export type ArchitectResult = {
-  ok: true;
-  steps: ArchitectStep[];
-  intel: string;
-  draft: string;
-  score: number;
-  label: string;
-  nextAction: string;
-  policyPass: boolean;
-  policyHits: string[];
-} | { ok: false; error: string; steps: ArchitectStep[] };
+export type ArchitectResult =
+  | {
+      ok: true;
+      steps: ArchitectStep[];
+      intel: string;
+      draft: string;
+      score: number;
+      label: string;
+      nextAction: string;
+      policyPass: boolean;
+      policyHits: string[];
+    }
+  | { ok: false; error: string; steps: ArchitectStep[] };
 
 export const runArchitect = createServerFn({ method: "POST" })
   .validator((input: unknown) => runInput.parse(input))
@@ -354,92 +363,97 @@ export const runArchitect = createServerFn({ method: "POST" })
     const steps: ArchitectStep[] = [];
 
     let intel = data.signal;
-    const t0 = Date.now();
+    const collectionStartedAt = Date.now();
     try {
       if (data.url?.startsWith("http")) {
         const page = await collectPage(data.url);
         const signals = [
-          page.title ? `제목: ${page.title}` : "",
-          page.priceLike.length ? `가격 단서: ${page.priceLike.join(", ")}` : "",
-          page.ctas.length ? `CTA: ${page.ctas.join(", ")}` : "",
-        ].filter(Boolean).join("\n");
-        intel = `${data.signal}\n\n[수집]\n${signals}\n${page.text.slice(0, 1800)}`;
+          page.title ? `Title: ${page.title}` : "",
+          page.priceLike.length ? `Price signals: ${page.priceLike.join(", ")}` : "",
+          page.ctas.length ? `CTAs: ${page.ctas.join(", ")}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+        intel = `${data.signal}\n\n[Collection]\n${signals}\n${page.text.slice(0, 1800)}`;
         steps.push({
           id: "brightdata",
-          label: "시그널 수집",
+          label: "Signal collection",
           via: page.via,
-          ms: Date.now() - t0,
+          ms: Date.now() - collectionStartedAt,
           ok: true,
-          detail: `${page.text.length}자 · 가격 ${page.priceLike.length}개 · CTA ${page.ctas.length}개`,
+          detail: `${page.text.length} characters, ${page.priceLike.length} price signals, ${page.ctas.length} CTAs`,
         });
       } else {
         steps.push({
           id: "brightdata",
-          label: "시그널 수집",
+          label: "Signal collection",
           via: "inbox-signal",
-          ms: Date.now() - t0,
+          ms: Date.now() - collectionStartedAt,
           ok: true,
-          detail: "대상 관찰 신호를 사용했습니다.",
+          detail: "Used the selected target's observed signal.",
         });
       }
-    } catch (err) {
+    } catch (error) {
       steps.push({
         id: "brightdata",
-        label: "시그널 수집",
+        label: "Signal collection",
         via: "error",
-        ms: Date.now() - t0,
+        ms: Date.now() - collectionStartedAt,
         ok: false,
-        detail: err instanceof Error ? err.message : "수집 실패",
+        detail: error instanceof Error ? error.message : "Collection failed.",
       });
     }
 
-    const t1 = Date.now();
-    const draftRes = await chatComplete(
+    const draftStartedAt = Date.now();
+    const draftResult = await chatComplete(
       [
         {
           role: "system",
-          content: `${data.companyName} ${data.founderName}. 톤:${data.tone}
-환불:${data.refund} 납기:${data.delivery}
-금지:${data.doNot.join(" / ")}
-상품:${data.productName} ${data.productSummary}
-상담:${data.consultUrl} 결제:${data.paymentUrl}
-한국어 아웃리치 본문만. 6~12문장. 과장 금지.`,
+          content: `Write an English outreach body for ${data.companyName} from ${data.founderName}.
+Tone: ${data.tone}
+Refunds: ${data.refund}
+Delivery: ${data.delivery}
+Do not: ${data.doNot.join(" / ")}
+Offer: ${data.productName} - ${data.productSummary}
+Consultation: ${data.consultUrl}
+Payment: ${data.paymentUrl}
+Write only the outreach body in 6-12 sentences. Be concrete and do not use hype.`,
         },
         {
           role: "user",
-          content: `대상:${data.name} (${data.area})\n${intel}`,
+          content: `Target: ${data.name} (${data.area})\n${intel}`,
         },
       ],
       500,
     );
-    if (!draftRes.ok) {
+    if (!draftResult.ok) {
       steps.push({
         id: "qwen",
-        label: "한국어 초안",
+        label: "Outreach draft",
         via: "none",
-        ms: Date.now() - t1,
+        ms: Date.now() - draftStartedAt,
         ok: false,
-        detail: draftRes.error,
+        detail: draftResult.error,
       });
-      return { ok: false, error: draftRes.error, steps };
+      return { ok: false, error: draftResult.error, steps };
     }
-    const draft = draftRes.text;
+    const draft = draftResult.text;
     steps.push({
       id: "qwen",
-      label: "한국어 초안",
-      via: draftRes.provider,
-      ms: Date.now() - t1,
+      label: "Outreach draft",
+      via: draftResult.provider,
+      ms: Date.now() - draftStartedAt,
       ok: true,
-      detail: `${draft.length}자`,
+      detail: `${draft.length} characters`,
     });
 
-    const t2 = Date.now();
-    const scoreRes = await chatComplete(
+    const scoreStartedAt = Date.now();
+    const scoreResult = await chatComplete(
       [
         {
           role: "system",
           content:
-            'JSON only: {"score":0-100,"label":"낮음|관심|구매의도|즉시구매","next":"한 줄"}',
+            'Return JSON only: {"score": 0-100, "label": "Low|Interested|Purchase intent|Ready to buy", "next": "next action for the owner"}.',
         },
         { role: "user", content: `${data.name}\n${intel}\n---\n${draft}` },
       ],
@@ -447,11 +461,11 @@ export const runArchitect = createServerFn({ method: "POST" })
       true,
     );
     let score = 50;
-    let label = "관심";
-    let nextAction = "대표가 초안을 검수하세요.";
-    if (scoreRes.ok) {
+    let label = "Interested";
+    let nextAction = "Review the draft before sending.";
+    if (scoreResult.ok) {
       try {
-        const jsonText = scoreRes.text.replace(/```json|```/g, "").trim();
+        const jsonText = scoreResult.text.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(jsonText) as {
           score?: number;
           label?: string;
@@ -461,7 +475,7 @@ export const runArchitect = createServerFn({ method: "POST" })
         label = String(parsed.label ?? label);
         nextAction = String(parsed.next ?? nextAction);
       } catch {
-        /* keep defaults */
+        // Keep defaults when a provider does not return valid JSON.
       }
     }
 
@@ -473,22 +487,22 @@ export const runArchitect = createServerFn({ method: "POST" })
     }
     steps.push({
       id: "nosana",
-      label: "GPU 의도 점수",
-      via: nosanaScore?.via || (scoreRes.ok ? `score:${scoreRes.provider}` : "skipped"),
-      ms: Date.now() - t2,
-      ok: Boolean(nosanaScore || scoreRes.ok),
-      detail: nosanaScore?.detail || (scoreRes.ok ? `${score} · ${label}` : scoreRes.error),
+      label: "GPU intent score",
+      via: nosanaScore?.via || (scoreResult.ok ? `score:${scoreResult.provider}` : "skipped"),
+      ms: Date.now() - scoreStartedAt,
+      ok: Boolean(nosanaScore || scoreResult.ok),
+      detail: nosanaScore?.detail || (scoreResult.ok ? `${score} - ${label}` : scoreResult.error),
     });
 
-    const t3 = Date.now();
+    const policyStartedAt = Date.now();
     const policy = await runDaytonaPolicy(draft, data.doNot);
     steps.push({
       id: "daytona",
-      label: "정책 샌드박스",
+      label: "Policy sandbox",
       via: policy.via,
-      ms: Date.now() - t3,
+      ms: Date.now() - policyStartedAt,
       ok: policy.pass,
-      detail: policy.pass ? "금지 조항 통과" : policy.hits.join(", "),
+      detail: policy.pass ? "Policy checks passed" : policy.hits.join(", "),
     });
 
     return {
