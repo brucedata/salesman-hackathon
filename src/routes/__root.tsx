@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "홈페이지·이메일·전화 문의를 한곳으로. 구매 의도를 읽고, 승인 후 매출로 연결하는 1인 사업자 AI 세일즈 에이전트.",
+        content: "An AI sales workspace that collects inquiries, prepares policy-aware drafts, and records approved follow-up for solo businesses.",
       },
       { name: "theme-color", content: "#ffffff" },
     ],
@@ -33,7 +33,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: () => (
-    <html lang="ko" className="antialiased" suppressHydrationWarning>
+    <html lang="en" className="antialiased" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

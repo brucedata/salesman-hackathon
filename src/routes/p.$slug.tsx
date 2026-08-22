@@ -20,7 +20,7 @@ function SalesPage() {
   if (!product) {
     return (
       <div className="grid min-h-dvh place-items-center bg-bg px-4 text-fg">
-        <p className="text-muted">판매 페이지가 없습니다.</p>
+        <p className="text-muted">This sales page is not available.</p>
       </div>
     );
   }
@@ -34,7 +34,7 @@ function SalesPage() {
         </Link>
       </header>
       <article className="mx-auto max-w-3xl px-4 pb-20 pt-6">
-        <p className="text-xs uppercase tracking-[0.16em] text-muted">판매 페이지</p>
+        <p className="text-xs uppercase tracking-[0.16em] text-muted">Sales page</p>
         <h1 className="mt-3 text-4xl md:text-5xl">{product.name}</h1>
         <p className="mt-4 text-xl tabular-nums">
           {formatWon(product.price)}
@@ -62,28 +62,28 @@ function SalesPage() {
               productId: product.id,
             });
             setSent(true);
-            toast("문의가 대표 수신함으로 들어갔습니다.");
+            toast("Your inquiry was added to the owner inbox.");
             window.setTimeout(() => {
               void navigate({ to: "/inbox/$leadId", params: { leadId: id } });
             }, 600);
           }}
         >
-          <h2 className="text-2xl">문의하기</h2>
-          <p className="text-sm text-muted">홈페이지 채널로 수신함에 쌓입니다.</p>
+          <h2 className="text-2xl">Get in touch</h2>
+          <p className="text-sm text-muted">It will be added to the inbox through the website channel.</p>
           <div>
-            <Label htmlFor="name">이름</Label>
+            <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" required />
           </div>
           <div>
-            <Label htmlFor="contact">이메일 또는 전화</Label>
+            <Label htmlFor="contact">Email or phone</Label>
             <Input id="contact" name="contact" required />
           </div>
           <div>
-            <Label htmlFor="message">하고 싶은 말</Label>
+            <Label htmlFor="message">What can we help with?</Label>
             <Textarea id="message" name="message" required />
           </div>
           <Button type="submit" disabled={sent}>
-            {sent ? "접수됨" : "문의 보내기"}
+            {sent ? "Received" : "Send inquiry"}
           </Button>
         </form>
       </article>

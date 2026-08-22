@@ -16,9 +16,9 @@ function ProductsPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <section>
-        <h1 className="text-3xl md:text-4xl">상품</h1>
+        <h1 className="text-3xl md:text-4xl">Offers</h1>
         <p className="mt-1 text-sm text-muted">
-          판매 페이지와 결제·상담 링크가 초안에 그대로 들어갑니다.
+          Sales pages plus payment and consultation links are included in the draft context.
         </p>
         <div className="mt-6 space-y-3">
           {products.map((p) => (
@@ -45,11 +45,11 @@ function ProductsPage() {
                   params={{ slug: p.slug }}
                   className="text-accent underline-offset-4 hover:underline"
                 >
-                  판매 페이지
+                  Sales page
                 </Link>
                 <span className="text-faint">{p.consultUrl}</span>
               </div>
-              <Label className="mt-4">가격</Label>
+              <Label className="mt-4">Price</Label>
               <Input
                 type="number"
                 defaultValue={p.price}
@@ -63,8 +63,8 @@ function ProductsPage() {
       </section>
 
       <section>
-        <h2 className="text-3xl">상품 정책</h2>
-        <p className="mt-1 text-sm text-muted">초안은 이 규칙을 벗어나지 않습니다.</p>
+        <h2 className="text-3xl">Offer policy</h2>
+        <p className="mt-1 text-sm text-muted">Drafts must stay within these rules.</p>
         <form
           className="mt-6 space-y-4 rounded-xl bg-surface p-5 shadow-[0_0_0_1px_var(--color-line)]"
           onSubmit={(e) => {
@@ -81,34 +81,34 @@ function ProductsPage() {
                 .map((s) => s.trim())
                 .filter(Boolean),
             });
-            toast("정책을 저장했습니다.");
+            toast("Policy saved.");
           }}
         >
           <div>
-            <Label htmlFor="companyName">상호</Label>
+            <Label htmlFor="companyName">Company</Label>
             <Input id="companyName" name="companyName" defaultValue={policy.companyName} />
           </div>
           <div>
-            <Label htmlFor="founderName">대표</Label>
+            <Label htmlFor="founderName">Owner</Label>
             <Input id="founderName" name="founderName" defaultValue={policy.founderName} />
           </div>
           <div>
-            <Label htmlFor="tone">톤</Label>
+            <Label htmlFor="tone">Tone</Label>
             <Textarea id="tone" name="tone" defaultValue={policy.tone} />
           </div>
           <div>
-            <Label htmlFor="refund">환불</Label>
+            <Label htmlFor="refund">Refunds</Label>
             <Textarea id="refund" name="refund" className="min-h-24" defaultValue={policy.refund} />
           </div>
           <div>
-            <Label htmlFor="delivery">납기</Label>
+            <Label htmlFor="delivery">Delivery</Label>
             <Input id="delivery" name="delivery" defaultValue={policy.delivery} />
           </div>
           <div>
-            <Label htmlFor="doNot">금지 (줄바꿈)</Label>
+            <Label htmlFor="doNot">Do not use (one per line)</Label>
             <Textarea id="doNot" name="doNot" defaultValue={policy.doNot.join("\n")} />
           </div>
-          <Button type="submit">정책 저장</Button>
+          <Button type="submit">Save policy</Button>
         </form>
       </section>
     </div>

@@ -11,8 +11,8 @@ function PipelinePage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-3xl md:text-4xl">파이프라인</h1>
-        <p className="mt-1 text-sm text-muted">문의가 어느 단계에 있는지 보고 옮깁니다.</p>
+        <h1 className="text-3xl md:text-4xl">Pipeline</h1>
+        <p className="mt-1 text-sm text-muted">Review each inquiry stage and move it when the work is ready.</p>
       </header>
       <div className="flex gap-3 overflow-x-auto pb-4">
         {stages.map((stage) => {

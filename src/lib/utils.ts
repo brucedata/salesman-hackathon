@@ -6,16 +6,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatWon(n: number) {
-  return new Intl.NumberFormat("ko-KR").format(n) + "원";
+  return `KRW ${new Intl.NumberFormat("en-US").format(n)}`;
 }
 
 export function formatTime(iso: string) {
-  const d = new Date(iso);
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${month}월 ${day}일 ${hh}:${mm}`;
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(iso));
 }
 
 export function uid(prefix = "id") {

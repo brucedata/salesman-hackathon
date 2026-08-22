@@ -6,12 +6,12 @@ import { useStudio } from "@/lib/store";
 import { toast } from "sonner";
 
 const nav = [
-  { to: "/inbox", label: "응대", icon: Inbox },
-  { to: "/outreach", label: "아웃리치", icon: Send },
-  { to: "/architect", label: "아키텍트", icon: Cpu },
-  { to: "/pipeline", label: "파이프라인", icon: Kanban },
-  { to: "/products", label: "상품", icon: Package },
-  { to: "/phone", label: "놓친 연락", icon: Phone },
+  { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/outreach", label: "Outreach", icon: Send },
+  { to: "/architect", label: "Architect", icon: Cpu },
+  { to: "/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/products", label: "Offers", icon: Package },
+  { to: "/phone", label: "Missed contact", icon: Phone },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -53,11 +53,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-xs text-muted hover:text-fg"
             onClick={() => {
               resetDemo();
-              toast("데모 데이터를 초기화했습니다.");
+              toast("Demo data reset.");
             }}
           >
             <RotateCcw className="size-3.5" />
-            <span className="hidden sm:inline">데모 리셋</span>
+            <span className="hidden sm:inline">Reset demo</span>
           </button>
         </div>
       </header>

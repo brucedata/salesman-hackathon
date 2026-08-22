@@ -159,7 +159,7 @@ export const useStudio = create<
     }),
     {
       name: "salesman-studio",
-      version: 4,
+      version: 5,
       skipHydration: true,
       partialize: (s) => ({
         policy: s.policy,

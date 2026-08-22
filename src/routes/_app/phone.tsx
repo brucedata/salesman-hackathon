@@ -13,30 +13,31 @@ export const Route = createFileRoute("/_app/phone")({ component: PhonePage });
 
 const samples = [
   {
-    name: "오세린",
+    name: "Seorin Oh",
     contact: "010-2209-1183",
     channel: "phone" as Channel,
     message:
-      "네 안녕하세요 마포구 공방인데요. 다음 달 마켓 나가는데 포장이랑 명함이 급해서요. 아이덴티티까지는 아니고 로고만 빠르게 가능한지 문자로 남겨주세요.",
+      "Hello, I run a craft studio in Mapo. We have a market next month and need packaging and business cards quickly. A full identity package may be too much; could you let me know by message whether a fast logo-only option is possible?",
   },
   {
-    name: "류태호",
+    name: "Taeho Ryu",
     contact: "010-8831-0021",
     channel: "phone" as Channel,
     message:
-      "랜딩 급합니다. 광고비가 이번 주부터 나가요. 결제 페이지까지 포함해서 가능한 가장 빠른 일정이랑 금액만 짧게 부탁합니다.",
+      "I need a landing page urgently. Ad spend starts this week. Please send the fastest delivery window and price for a page that includes checkout.",
   },
   {
-    name: "배지현",
+    name: "Jihyeon Bae",
     contact: "kakao:studio.jihyeon",
     channel: "message" as Channel,
-    message: "카톡 세 번 보냈어요. 명함 수량만 먼저 회신 부탁드려요. 작업하시느라 못 보신 것 같아서요.",
+    message:
+      "I sent three messages. Could you reply about the business-card quantity first? You may have missed it while you were producing work.",
   },
 ];
 
 function PhonePage() {
   const navigate = useNavigate();
-  const addCapture = useStudio((s) => s.addCapture);
+  const addCapture = useStudio((state) => state.addCapture);
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const [channel, setChannel] = useState<Channel>("phone");
@@ -54,18 +55,18 @@ function PhonePage() {
         : "audio/webm";
       const rec = new MediaRecorder(stream, { mimeType: mime });
       chunks.current = [];
-      rec.ondataavailable = (e) => {
-        if (e.data.size) chunks.current.push(e.data);
+      rec.ondataavailable = (event) => {
+        if (event.data.size) chunks.current.push(event.data);
       };
       rec.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
         void finishRec(new Blob(chunks.current, { type: rec.mimeType }));
       };
       recRef.current = rec;
       rec.start();
       setRecording(true);
     } catch {
-      toast.error("마이크 권한이 필요합니다. 아래에 받아쓰기를 붙여 넣어도 됩니다.");
+      toast.error("Microphone permission is required. You can paste a transcript below.");
     }
   }
 
@@ -80,55 +81,53 @@ function PhonePage() {
       const buf = await blob.arrayBuffer();
       const bytes = new Uint8Array(buf);
       let binary = "";
-      bytes.forEach((b) => {
-        binary += String.fromCharCode(b);
+      bytes.forEach((byte) => {
+        binary += String.fromCharCode(byte);
       });
-      const res = await transcribeVoice({
+      const response = await transcribeVoice({
         data: { audioBase64: btoa(binary), mimeType: blob.type || "audio/webm" },
       });
-      if (!res.ok) {
-        toast.error(res.error + " 텍스트로 붙여 넣으세요.");
+      if (!response.ok) {
+        toast.error(`${response.error} Paste the text instead.`);
         return;
       }
-      setMessage(res.text);
-      toast("음성을 텍스트로 바꿨습니다.");
+      setMessage(response.text);
+      toast("Voice converted to text.");
     } finally {
       setBusy(false);
     }
   }
 
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    const text =
-      message.trim() ||
-      (channel === "phone" ? "부재중 전화. 음성 없음." : "");
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const text = message.trim() || (channel === "phone" ? "Missed call. No voicemail." : "");
     if (!text) {
-      toast.error("내용을 입력하세요.");
+      toast.error("Enter a message first.");
       return;
     }
     const id = addCapture({
-      name: name.trim() || (channel === "message" ? "메시지 고객" : "전화 고객"),
-      contact: contact.trim() || "미확인",
+      name: name.trim() || (channel === "message" ? "Message contact" : "Phone contact"),
+      contact: contact.trim() || "Unknown",
       message: text,
       channel,
       missedKind: channel === "message" ? "message" : "call",
     });
-    toast("놓친 연락을 응대 데스크에 넣었습니다.");
+    toast("Missed contact added to Inbox.");
     void navigate({ to: "/inbox/$leadId", params: { leadId: id } });
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-3xl md:text-4xl">놓친 연락</h1>
+      <h1 className="text-3xl md:text-4xl">Missed contact</h1>
       <p className="mt-2 text-sm text-muted">
-        작업 중 못 받은 전화, 음성 메모, 카톡·문자를 텍스트로 남깁니다. 통신사 발신/수신은 없습니다.
+        Capture missed calls, voice notes, and messages as text while you work. This demo does not place or receive carrier calls.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2">
         {(
           [
-            ["phone", "부재중 전화"],
-            ["message", "메시지"],
+            ["phone", "Missed call"],
+            ["message", "Message"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -152,29 +151,29 @@ function PhonePage() {
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="name">이름</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
           </div>
           <div>
-            <Label htmlFor="contact">{channel === "message" ? "계정 / 번호" : "번호"}</Label>
+            <Label htmlFor="contact">{channel === "message" ? "Handle / number" : "Number"}</Label>
             <Input
               id="contact"
               value={contact}
-              placeholder={channel === "message" ? "kakao:id 또는 010" : "010-0000-0000"}
-              onChange={(e) => setContact(e.target.value)}
+              placeholder={channel === "message" ? "kakao:id or 010" : "010-0000-0000"}
+              onChange={(event) => setContact(event.target.value)}
             />
           </div>
         </div>
         <div>
-          <Label htmlFor="msg">{channel === "message" ? "메시지 내용" : "받아쓰기 · 부재중 메모"}</Label>
+          <Label htmlFor="msg">{channel === "message" ? "Message" : "Transcript or missed-call note"}</Label>
           <Textarea
             id="msg"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(event) => setMessage(event.target.value)}
             placeholder={
               channel === "message"
-                ? "카톡·문자 내용을 붙여 넣으세요."
-                : "음성 메모를 녹음하거나, 부재중이면 비워 두고 등록하세요."
+                ? "Paste the message text."
+                : "Record a voice note, paste a transcript, or leave blank for a missed call."
             }
           />
         </div>
@@ -183,37 +182,37 @@ function PhonePage() {
             recording ? (
               <Button type="button" variant="outline" onClick={stopRec}>
                 <Square className="size-3.5 fill-current" />
-                녹음 종료
+                Stop recording
               </Button>
             ) : (
               <Button type="button" variant="outline" onClick={() => void startRec()} disabled={busy}>
                 {busy ? <Loader2 className="size-4 animate-spin" /> : <Mic className="size-4" />}
-                음성 남기기
+                Record voice
               </Button>
             )
           ) : null}
-          <Button type="submit">놓친 문의로 등록</Button>
+          <Button type="submit">Add to missed inquiries</Button>
         </div>
       </form>
 
       <div className="mt-8">
-        <h2 className="text-lg font-medium">예시</h2>
+        <h2 className="text-lg font-medium">Examples</h2>
         <div className="mt-3 space-y-2">
-          {samples.map((s) => (
+          {samples.map((sample) => (
             <button
-              key={s.contact}
+              key={sample.contact}
               type="button"
               className="w-full rounded-xl bg-surface p-4 text-left text-sm shadow-[0_0_0_1px_var(--color-line)] hover:bg-raised"
               onClick={() => {
-                setChannel(s.channel);
-                setName(s.name);
-                setContact(s.contact);
-                setMessage(s.message);
+                setChannel(sample.channel);
+                setName(sample.name);
+                setContact(sample.contact);
+                setMessage(sample.message);
               }}
             >
-              <span className="font-medium">{s.name}</span>
-              <span className="ml-2 text-faint">{s.channel === "message" ? "메시지" : "전화"}</span>
-              <p className="mt-1 text-muted">{s.message}</p>
+              <span className="font-medium">{sample.name}</span>
+              <span className="ml-2 text-faint">{sample.channel === "message" ? "Message" : "Phone"}</span>
+              <p className="mt-1 text-muted">{sample.message}</p>
             </button>
           ))}
         </div>

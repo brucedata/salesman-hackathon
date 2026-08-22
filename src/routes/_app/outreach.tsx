@@ -10,19 +10,19 @@ import { Textarea } from "@/components/ui/input";
 export const Route = createFileRoute("/_app/outreach")({ component: OutreachPage });
 
 function OutreachPage() {
-  const prospects = useStudio((s) => s.prospects);
-  const products = useStudio((s) => s.products);
-  const policy = useStudio((s) => s.policy);
-  const patchProspect = useStudio((s) => s.patchProspect);
+  const prospects = useStudio((state) => state.prospects);
+  const products = useStudio((state) => state.products);
+  const policy = useStudio((state) => state.policy);
+  const patchProspect = useStudio((state) => state.patchProspect);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function draft(id: string) {
-    const p = prospects.find((x) => x.id === id);
-    const product = products.find((x) => x.id === p?.productId);
-    if (!p || !product) return;
+    const prospect = prospects.find((item) => item.id === id);
+    const product = products.find((item) => item.id === prospect?.productId);
+    if (!prospect || !product) return;
     setBusyId(id);
     try {
-      const res = await generateOutreach({
+      const response = await generateOutreach({
         data: {
           companyName: policy.companyName,
           founderName: policy.founderName,
@@ -31,15 +31,15 @@ function OutreachPage() {
           productName: product.name,
           productSummary: product.summary,
           consultUrl: product.consultUrl,
-          prospect: { name: p.name, area: p.area, signal: p.signal },
+          prospect: { name: prospect.name, area: prospect.area, signal: prospect.signal },
         },
       });
-      if (!res.ok) {
-        toast.error(res.error);
+      if (!response.ok) {
+        toast.error(response.error);
         return;
       }
-      patchProspect(id, { draft: res.text });
-      toast("아웃리치 초안이 준비됐습니다.");
+      patchProspect(id, { draft: response.text });
+      toast("Outreach draft ready.");
     } finally {
       setBusyId(null);
     }
@@ -48,52 +48,52 @@ function OutreachPage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-3xl md:text-4xl">아웃리치</h1>
+        <h1 className="text-3xl md:text-4xl">Outreach</h1>
         <p className="mt-1 text-sm text-muted">
-          관찰 신호를 바탕으로 첫 메시지를 만듭니다. 보내기 전에 대표가 고칩니다.
+          Prepare a first message from observed signals, then review it before recording a send.
         </p>
       </header>
       <div className="space-y-4">
-        {prospects.map((p) => {
-          const product = products.find((x) => x.id === p.productId);
+        {prospects.map((prospect) => {
+          const product = products.find((item) => item.id === prospect.productId);
           return (
             <article
-              key={p.id}
+              key={prospect.id}
               className="rounded-xl bg-raised p-5 shadow-[0_0_0_1px_var(--color-line)]"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-xl">{p.name}</h2>
+                <h2 className="text-xl">{prospect.name}</h2>
                 <span className="text-xs text-faint">
-                  {p.area} · {p.status === "sent" ? "발송 기록" : "대기"}
+                  {prospect.area} - {prospect.status === "sent" ? "Send recorded" : "Pending"}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-muted">{p.signal}</p>
+              <p className="mt-2 text-sm text-muted">{prospect.signal}</p>
               <p className="mt-1 text-xs text-faint">{product?.name}</p>
               <Textarea
                 className="mt-4 min-h-28"
-                value={p.draft ?? ""}
-                placeholder="초안 만들기 후 수정하세요."
-                onChange={(e) => patchProspect(p.id, { draft: e.target.value })}
+                value={prospect.draft ?? ""}
+                placeholder="Create a draft, then review it."
+                onChange={(event) => patchProspect(prospect.id, { draft: event.target.value })}
               />
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={busyId === p.id}
-                  onClick={() => void draft(p.id)}
+                  disabled={busyId === prospect.id}
+                  onClick={() => void draft(prospect.id)}
                 >
-                  {busyId === p.id ? <Loader2 className="size-4 animate-spin" /> : null}
-                  초안 만들기
+                  {busyId === prospect.id ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Create draft
                 </Button>
                 <Button
                   size="sm"
-                  disabled={!p.draft}
+                  disabled={!prospect.draft}
                   onClick={() => {
-                    patchProspect(p.id, { status: "sent" });
-                    toast("아웃리치 발송을 기록했습니다.");
+                    patchProspect(prospect.id, { status: "sent" });
+                    toast("Outreach send recorded.");
                   }}
                 >
-                  승인 후 발송
+                  Approve and record send
                 </Button>
               </div>
             </article>

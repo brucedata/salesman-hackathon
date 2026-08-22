@@ -1,26 +1,26 @@
 import type { Channel, Lead, MissedKind, Stage } from "./types";
 
 export const channelLabel: Record<Channel, string> = {
-  web: "홈페이지",
-  email: "이메일",
-  phone: "전화",
-  message: "메시지",
+  web: "Website",
+  email: "Email",
+  phone: "Phone",
+  message: "Message",
 };
 
 export const missedLabel: Record<MissedKind, string> = {
-  call: "부재중 전화",
-  email: "미응답 메일",
-  message: "미확인 메시지",
-  unanswered: "미응답",
+  call: "Missed call",
+  email: "Unanswered email",
+  message: "Unread message",
+  unanswered: "Unanswered",
 };
 
 export const stageLabel: Record<Stage, string> = {
-  new: "신규",
-  qualified: "유망",
-  awaiting_approval: "승인 대기",
-  sent: "발송",
-  won: "성사",
-  lost: "종료",
+  new: "New",
+  qualified: "Qualified",
+  awaiting_approval: "Awaiting approval",
+  sent: "Send recorded",
+  won: "Won",
+  lost: "Closed",
 };
 
 export const stages: Stage[] = [
