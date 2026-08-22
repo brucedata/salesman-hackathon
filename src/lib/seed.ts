@@ -1,0 +1,273 @@
+import type { Lead, Policy, Product, Prospect } from "./types";
+
+export const defaultPolicy: Policy = {
+  companyName: "한스튜디오",
+  founderName: "한서윤",
+  tone: "따뜻하되 단호. 1인 스튜디오답게 솔직하고, 과장 없이 범위를 분명히 한다. 존댓말. 문장은 짧게.",
+  refund:
+    "착수 전 100% 환불. 시안 1차 전달 이후 50%. 최종 파일 전달 후 환불 불가. 일정 변경은 영업일 3일 전 합의.",
+  delivery: "아이덴티티 10영업일, 랜딩 7영업일, 월간 운영은 매월 1일 리포트.",
+  doNot: [
+    "할인율 임의 약속 금지 (대표 승인 전 최대 5%만 언급)",
+    "경쟁사 비방 금지",
+    "없는 기능·일정 확정 금지",
+    "개인 계좌 직접 안내 금지 — 결제 링크만 사용",
+  ],
+};
+
+export const defaultProducts: Product[] = [
+  {
+    id: "p_identity",
+    name: "브랜드 아이덴티티 패키지",
+    price: 1200000,
+    summary: "로고, 컬러, 타입, 명함·SNS 템플릿까지. 작은 브랜드가 처음부터 단단하게 서게.",
+    benefits: ["로고 2안 + 1회 수정", "컬러·타입 가이드", "명함/명함형 프로필 세트", "사용 가이드 PDF"],
+    slug: "identity",
+    consultUrl: "https://cal.com/hanstudio/30min",
+    paymentUrl: "https://pay.salesman.app/identity",
+  },
+  {
+    id: "p_landing",
+    name: "판매 랜딩페이지",
+    price: 890000,
+    summary: "문의가 매출로 이어지는 한 장. 카피, 섹션, 문의 폼까지 포함.",
+    benefits: ["카피 초안 포함", "모바일 우선 레이아웃", "문의 폼 + 알림", "14일 수정 윈도우"],
+    slug: "landing",
+    consultUrl: "https://cal.com/hanstudio/30min",
+    paymentUrl: "https://pay.salesman.app/landing",
+  },
+  {
+    id: "p_retain",
+    name: "월간 운영 대행",
+    price: 450000,
+    period: "월",
+    summary: "콘텐츠 4건, 문의 응대 초안, 월 리포트. 대표는 승인만.",
+    benefits: ["콘텐츠 4건/월", "문의 초안 검수", "월 1회 전략 콜", "성과 리포트"],
+    slug: "retainer",
+    consultUrl: "https://cal.com/hanstudio/ops",
+    paymentUrl: "https://pay.salesman.app/retainer",
+  },
+];
+
+const hoursAgo = (h: number) => new Date(Date.parse("2026-08-22T04:00:00.000Z") - h * 3600_000).toISOString();
+
+export const defaultLeads: Lead[] = [
+  {
+    id: "ld_phone_open",
+    name: "정민호",
+    contact: "demo-phone-01",
+    channel: "phone",
+    message:
+      "안녕하세요 서초에서 다음 주 수요일에 카페 오픈하는데 간판이랑 인스타 프로필이 하나도 안 맞아요. 급하게 로고만이라도 가능한지, 예산은 백오십에서 이백 정도 생각하고 전화 남깁니다. 오늘 저녁 여덟 시 이후 연락 부탁해요.",
+    createdAt: hoursAgo(1),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "sms",
+    stage: "new",
+    productId: "p_identity",
+    missed: true,
+    missedKind: "call",
+    thread: [
+      {
+        role: "customer",
+        text: "안녕하세요 서초에서 다음 주 수요일에 카페 오픈하는데 간판이랑 인스타 프로필이 하나도 안 맞아요. 급하게 로고만이라도 가능한지, 예산은 백오십에서 이백 정도 생각하고 전화 남깁니다. 오늘 저녁 여덟 시 이후 연락 부탁해요.",
+        at: hoursAgo(1),
+      },
+    ],
+  },
+  {
+    id: "ld_web_cafe",
+    name: "이도연",
+    contact: "doyeon.lee@example.com",
+    channel: "web",
+    message:
+      "성수동 카페 리뉴얼합니다. 메뉴판·간판·온라인 주문 페이지를 한 톤으로 맞추고 싶어요. 이번 달 안에 시안을 보고 싶습니다. 아이덴티티 패키지 견적과 일정을 알려주세요.",
+    createdAt: hoursAgo(3),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "email",
+    stage: "new",
+    productId: "p_identity",
+    missed: true,
+    missedKind: "unanswered",
+    thread: [
+      {
+        role: "customer",
+        text: "성수동 카페 리뉴얼합니다. 메뉴판·간판·온라인 주문 페이지를 한 톤으로 맞추고 싶어요. 이번 달 안에 시안을 보고 싶습니다. 아이덴티티 패키지 견적과 일정을 알려주세요.",
+        at: hoursAgo(3),
+      },
+    ],
+  },
+  {
+    id: "ld_email_price",
+    name: "박준혁",
+    contact: "junhyuk.park@example.com",
+    channel: "email",
+    message:
+      "랜딩페이지 견적만 먼저 알고 싶습니다. 상품은 온라인 강의 하나고, 결제 연동은 토스페이먼츠 예정입니다. 다른 곳 두 군데와 비교 중입니다.",
+    createdAt: hoursAgo(8),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "email",
+    stage: "new",
+    productId: "p_landing",
+    missed: true,
+    missedKind: "email",
+    thread: [
+      {
+        role: "customer",
+        text: "랜딩페이지 견적만 먼저 알고 싶습니다. 상품은 온라인 강의 하나고, 결제 연동은 토스페이먼츠 예정입니다. 다른 곳 두 군데와 비교 중입니다.",
+        at: hoursAgo(8),
+      },
+    ],
+  },
+  {
+    id: "ld_web_student",
+    name: "김하늘",
+    contact: "skykim.dev@example.com",
+    channel: "web",
+    message:
+      "졸업 전시 포트폴리오 사이트 만들고 싶은 학생입니다. 학생 할인이 되나요? 예산은 20만 원 이하입니다.",
+    createdAt: hoursAgo(20),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "email",
+    stage: "new",
+    productId: null,
+    missed: true,
+    missedKind: "unanswered",
+    thread: [
+      {
+        role: "customer",
+        text: "졸업 전시 포트폴리오 사이트 만들고 싶은 학생입니다. 학생 할인이 되나요? 예산은 20만 원 이하입니다.",
+        at: hoursAgo(20),
+      },
+    ],
+  },
+  {
+    id: "ld_email_retain",
+    name: "최은지",
+    contact: "eunji@example.com",
+    channel: "email",
+    message:
+      "공방 브랜드입니다. 인스타와 문의 응대를 매달 맡기고 싶어요. 월간 운영 대행 계약 전에 한 달 파일럿이 가능한지, 기존 톤은 유지하고 싶습니다.",
+    createdAt: hoursAgo(30),
+    intentScore: 74,
+    intentLabel: "구매의도",
+    nextAction: "파일럿 범위와 월 리테이너 조건을 상담 링크로 제안",
+    reasons: ["의사결정자", "지속 계약 의사", "톤 유지 요구가 명확"],
+    draft:
+      "은지 님, 한스튜디오 한서윤입니다.\n\n월간 운영 대행은 콘텐츠 4건과 문의 초안, 월 리포트가 기본입니다. 기존 톤은 가이드로 고정하고, 첫 달은 파일럿으로 운영 범위를 맞춰 볼 수 있습니다.\n\n조건: 450,000원/월. 파일럿은 본 계약과 동일한 범위, 종료 시 인수인계만 진행합니다.\n\n30분 상담: https://cal.com/hanstudio/ops\n결제(월간): https://pay.salesman.app/retainer\n\n가능한 시간대 두 개만 알려주시면 바로 잡아 드리겠습니다.",
+    replyChannel: "email",
+    stage: "awaiting_approval",
+    productId: "p_retain",
+    thread: [
+      {
+        role: "customer",
+        text: "공방 브랜드입니다. 인스타와 문의 응대를 매달 맡기고 싶어요. 월간 운영 대행 계약 전에 한 달 파일럿이 가능한지, 기존 톤은 유지하고 싶습니다.",
+        at: hoursAgo(30),
+      },
+      {
+        role: "agent",
+        text: "은지 님, 한스튜디오 한서윤입니다.\n\n월간 운영 대행은 콘텐츠 4건과 문의 초안, 월 리포트가 기본입니다. 기존 톤은 가이드로 고정하고, 첫 달은 파일럿으로 운영 범위를 맞춰 볼 수 있습니다.\n\n조건: 450,000원/월. 파일럿은 본 계약과 동일한 범위, 종료 시 인수인계만 진행합니다.\n\n30분 상담: https://cal.com/hanstudio/ops\n결제(월간): https://pay.salesman.app/retainer\n\n가능한 시간대 두 개만 알려주시면 바로 잡아 드리겠습니다.",
+        at: hoursAgo(28),
+      },
+    ],
+    appointment: { when: "2026-08-25T14:00:00.000Z", note: "파일럿 범위 30분 콜" },
+    missed: false,
+  },
+  {
+    id: "ld_missed_call",
+    name: "윤서아",
+    contact: "demo-phone-02",
+    channel: "phone",
+    message: "부재중 전화 2회. 음성 없음. 작업 중 수신 불가.",
+    createdAt: hoursAgo(6),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "sms",
+    stage: "new",
+    productId: null,
+    missed: true,
+    missedKind: "call",
+    thread: [
+      {
+        role: "customer",
+        text: "부재중 전화 2회. 음성 없음. 작업 중 수신 불가.",
+        at: hoursAgo(6),
+      },
+    ],
+  },
+  {
+    id: "ld_missed_msg",
+    name: "한태리",
+    contact: "demo-message-01",
+    channel: "message",
+    message:
+      "명함 시안 오늘까지 가능한가요? 오전에 카톡 두 번 보냈는데 답이 없어서 다시 남깁니다. 내일 거래처 미팅에 가져가야 해서요.",
+    createdAt: hoursAgo(4),
+    intentScore: null,
+    intentLabel: null,
+    nextAction: null,
+    reasons: [],
+    draft: null,
+    replyChannel: "sms",
+    stage: "new",
+    productId: "p_identity",
+    missed: true,
+    missedKind: "message",
+    thread: [
+      {
+        role: "customer",
+        text: "명함 시안 오늘까지 가능한가요? 오전에 카톡 두 번 보냈는데 답이 없어서 다시 남깁니다. 내일 거래처 미팅에 가져가야 해서요.",
+        at: hoursAgo(4),
+      },
+    ],
+  },
+];
+
+export const defaultProspects: Prospect[] = [
+  {
+    id: "pr_1",
+    name: "서초 카페 오픈 예정",
+    area: "서초동",
+    signal: "인스타에 오픈 카운트다운. 간판 시안 없음.",
+    productId: "p_identity",
+    draft: null,
+    status: "ready",
+  },
+  {
+    id: "pr_2",
+    name: "성수 편집샵 리뉴얼",
+    area: "성수동",
+    signal: "홈페이지가 2019년 이후 멈춤. 문의 폼 없음.",
+    productId: "p_landing",
+    draft: null,
+    status: "ready",
+  },
+  {
+    id: "pr_3",
+    name: "마포 공방 마켓",
+    area: "망원동",
+    signal: "매달 마켓 참가, 포장·명함 톤이 매번 다름.",
+    productId: "p_identity",
+    draft: null,
+    status: "ready",
+  },
+];
+
