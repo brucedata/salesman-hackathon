@@ -1,7 +1,10 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
+import { useEffect } from 'react';
+import { reportRenderError } from './monitoring';
 
 export function AppErrorComponent({ error }: ErrorComponentProps) {
+  useEffect(() => { reportRenderError(error); }, [error]);
   return (
     <main
       className={
