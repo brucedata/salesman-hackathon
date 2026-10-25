@@ -46,6 +46,15 @@ test("a missing app-env.json is a clean no-op", () => {
   assert.deepEqual(readAppEnv(makeWorkspace()), {});
 });
 
+test("a public checkout without private app-env files defaults to auth off", () => {
+  const root = makeWorkspace();
+  assert.equal(mergeAppEnv(readAppEnv(root), {}).VITE_AUTH_ENABLED, "false");
+  assert.equal(
+    mergeAppEnv(readAppEnv(root), { VITE_AUTH_ENABLED: "true" }).VITE_AUTH_ENABLED,
+    "true",
+  );
+});
+
 test("reads the app env from a workspace", () => {
   const root = makeWorkspace('{"VITE_AUTH_ENABLED":"false"}');
   assert.deepEqual(readAppEnv(root), { VITE_AUTH_ENABLED: "false" });
@@ -60,8 +69,8 @@ test("an explicit process-env override wins over the file", () => {
   assert.equal(merged.PATH, "/usr/bin");
 });
 
-test("the template ships auth off", () => {
-  assert.deepEqual(readAppEnv(projectRoot()), { VITE_AUTH_ENABLED: "false" });
+test("the project defaults to auth off", () => {
+  assert.equal(mergeAppEnv(readAppEnv(projectRoot()), {}).VITE_AUTH_ENABLED, "false");
 });
 
 test("vite loadEnv resolves the wrapped value", () => {
@@ -97,6 +106,23 @@ test("the wrapped command sees an explicit override, not the file value", async 
   assert.equal(stdout, "true");
 });
 
+test("wrapped commands preserve shell metacharacters as literal arguments", async () => {
+  const value = "spaces & echo unexpected | %PATH%";
+  const { stdout } = await execFileAsync(process.execPath, [
+    WRAPPER,
+    process.execPath,
+    "-e",
+    "process.stdout.write(process.argv[1]);",
+    value,
+  ]);
+  assert.equal(stdout, value);
+});
+
+test("the Vite CLI runs without relying on a shell shim", async () => {
+  const { stdout } = await execFileAsync(process.execPath, [WRAPPER, "vite", "--version"]);
+  assert.match(stdout, /vite\//);
+});
+
 test("the wrapper propagates the command's exit code", async () => {
   await assert.rejects(
     execFileAsync(process.execPath, [WRAPPER, process.execPath, "-e", "process.exit(3)"]),
@@ -122,7 +148,7 @@ test("the CLI still runs when invoked through a symlinked path", async () => {
   // node realpaths import.meta.url but not process.argv[1], so a raw comparison
   // turns the wrapper into a no-op that exits 0 without starting anything.
   const link = join(mkdtempSync(join(tmpdir(), "app-env-link-")), "scripts");
-  symlinkSync(join(projectRoot(), "scripts"), link);
+  symlinkSync(join(projectRoot(), "scripts"), link, process.platform === "win32" ? "junction" : "dir");
   const { stdout } = await execFileAsync(process.execPath, [
     join(link, "with-app-env.mjs"),
     process.execPath,

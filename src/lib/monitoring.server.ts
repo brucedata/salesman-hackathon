@@ -2,10 +2,11 @@ import { init, captureException, flush } from '@sentry/node';
 import { privateCollection, scrubErrorEvent } from './sentry-privacy';
 let initialized = false;
 export async function reportServerError(error: unknown) {
-  if (process.env.NODE_ENV !== 'production' || process.env.SENTRY_ENABLED === 'false') return;
+  const dsn = process.env.SENTRY_DSN?.trim();
+  if (process.env.NODE_ENV !== 'production' || process.env.SENTRY_ENABLED !== 'true' || !dsn) return;
   if (!initialized) {
     initialized = true;
-    init({ dsn: process.env.SENTRY_DSN || '',
+    init({ dsn,
       defaultIntegrations: false, integrations: [], dataCollection: privateCollection,
       maxBreadcrumbs: 0, beforeBreadcrumb: () => null,
       beforeSend: (event) => scrubErrorEvent(event, 'salesman-server'),
