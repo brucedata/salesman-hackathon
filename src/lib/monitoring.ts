@@ -1,12 +1,12 @@
 import { init, captureException, globalHandlersIntegration, browserApiErrorsIntegration } from '@sentry/browser';
 import { privateCollection, scrubErrorEvent } from './sentry-privacy';
 
-const publicDsn = 'https://4deab0412c9c2386ec80319b7544a5eb@o4512248584077312.ingest.us.sentry.io/4512249824346112';
 let initialized = false;
 export function initializeMonitoring() {
-  if (initialized || typeof window === 'undefined' || !import.meta.env.PROD || import.meta.env.VITE_SENTRY_ENABLED === 'false') return;
+  const dsn = import.meta.env.VITE_SENTRY_DSN?.trim();
+  if (initialized || typeof window === 'undefined' || !import.meta.env.PROD || import.meta.env.VITE_SENTRY_ENABLED !== 'true' || !dsn) return;
   initialized = true;
-  init({ dsn: import.meta.env.VITE_SENTRY_DSN || publicDsn,
+  init({ dsn,
     defaultIntegrations: false, integrations: [globalHandlersIntegration(), browserApiErrorsIntegration()],
     dataCollection: privateCollection, maxBreadcrumbs: 0, beforeBreadcrumb: () => null,
     beforeSend: (event) => scrubErrorEvent(event, 'salesman-web'),
@@ -15,5 +15,7 @@ export function initializeMonitoring() {
     sendClientReports: false, ignoreSpans: [/.*/], tracePropagationTargets: [],
   });
 }
-export function reportRenderError(error: unknown) { captureException(error); }
+export function reportRenderError(error: unknown) {
+  if (initialized) captureException(error);
+}
 

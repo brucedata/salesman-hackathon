@@ -31,7 +31,7 @@ function localDemoResponse(messages: ChatMessage[], json: boolean) {
       intentLabel: "Interested",
       nextAction: "Review the response draft and confirm the best time to follow up.",
       reasons: ["Clear project need", "Timeline or budget signal is present"],
-      draft: `Hi ${target}, thanks for reaching out to Han Studio. I am sorry we missed your message while we were with another client. I can confirm the relevant scope and next available start date after a short consultation. You can choose a time here: https://cal.com/hanstudio/30min. Please share the best time to reply, and I will follow up promptly.`,
+      draft: `Hi ${target}, thanks for reaching out to Han Studio. I am sorry we missed your message while we were with another client. I can confirm the relevant scope and next available start date after a short consultation. You can choose a time here: https://example.invalid/consult/30min. Please share the best time to reply, and I will follow up promptly.`,
       replyChannel: /Channel:\s*(phone|message)/i.test(userMessage) ? "sms" : "email",
       productId: "p_identity",
     });
@@ -49,7 +49,7 @@ function localDemoResponse(messages: ChatMessage[], json: boolean) {
     `Hi ${target}, I noticed the work you are preparing and wanted to reach out directly.`,
     "Han Studio can help turn the immediate need into a focused, usable first deliverable.",
     "We can begin by confirming the scope, schedule, and the materials you already have.",
-    "If a short conversation would help, you can choose a time at https://cal.com/hanstudio/30min.",
+    "If a short conversation would help, you can choose a time at https://example.invalid/consult/30min.",
   ].join(" ");
 }
 

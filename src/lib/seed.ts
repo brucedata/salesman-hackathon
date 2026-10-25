@@ -30,8 +30,8 @@ export const defaultProducts: Product[] = [
       "Usage guide PDF",
     ],
     slug: "identity",
-    consultUrl: "https://cal.com/hanstudio/30min",
-    paymentUrl: "https://pay.salesman.app/identity",
+    consultUrl: "https://example.invalid/consult/30min",
+    paymentUrl: "https://example.invalid/pay/identity",
   },
   {
     id: "p_landing",
@@ -46,8 +46,8 @@ export const defaultProducts: Product[] = [
       "One revision round within 14 days",
     ],
     slug: "landing",
-    consultUrl: "https://cal.com/hanstudio/30min",
-    paymentUrl: "https://pay.salesman.app/landing",
+    consultUrl: "https://example.invalid/consult/30min",
+    paymentUrl: "https://example.invalid/pay/landing",
   },
   {
     id: "p_retain",
@@ -58,8 +58,8 @@ export const defaultProducts: Product[] = [
       "Four content pieces, inquiry-response drafts, and a monthly report for teams that need a steady creative partner.",
     benefits: ["Four content pieces", "Inquiry-draft review", "One monthly check-in", "Performance report"],
     slug: "retainer",
-    consultUrl: "https://cal.com/hanstudio/ops",
-    paymentUrl: "https://pay.salesman.app/retainer",
+    consultUrl: "https://example.invalid/consult/ops",
+    paymentUrl: "https://example.invalid/pay/retainer",
   },
 ];
 
@@ -70,7 +70,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_phone_open",
     name: "Jinwoo Park",
-    contact: "010-5621-4480",
+    contact: "demo-phone-01",
     channel: "phone",
     message:
       "Hello, I am opening a cafe in Seocho next Wednesday. The signage, menu board, and profile do not feel consistent yet. Could you tell me whether a fast logo-only option is possible? I am thinking about a budget around KRW 1,000,000 and would appreciate a call or message after 3 PM today.",
@@ -97,7 +97,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_web_cafe",
     name: "Doyeon Lee",
-    contact: "doyeon.lee@naver.com",
+    contact: "doyeon.lee@example.com",
     channel: "web",
     message:
       "We are renovating a cafe in Seongsu. I want the menu, wayfinding, and online ordering page to feel like one brand. Could you send an estimate and available start date for the identity package? I would like to review a proposal this week.",
@@ -124,7 +124,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_email_price",
     name: "Junhyuk Park",
-    contact: "junhyuk.park@gmail.com",
+    contact: "junhyuk.park@example.com",
     channel: "email",
     message:
       "Could you send a landing-page estimate first? I am launching an online course with a payment flow and one case-study section. I am comparing a couple of studios and need a quick sense of cost and lead time.",
@@ -151,7 +151,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_web_student",
     name: "Sky Kim",
-    contact: "skykim.dev@gmail.com",
+    contact: "skykim.dev@example.com",
     channel: "web",
     message:
       "I am a student preparing a graduation portfolio site. Do you have a discount option? My budget is under KRW 200,000.",
@@ -178,7 +178,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_email_retain",
     name: "Eunji Choi",
-    contact: "eunji@atelier-m.co",
+    contact: "eunji@example.com",
     channel: "email",
     message:
       "I run an independent fashion brand. We need help preparing content and customer-response drafts every month. Before committing to monthly support, could we review the scope and how the first month would work? We already have a style guide.",
@@ -188,7 +188,7 @@ export const defaultLeads: Lead[] = [
     nextAction: "Share the first-month scope and retainer terms through a short consultation link.",
     reasons: ["Clear decision owner", "Existing brand system", "Monthly need is defined"],
     draft:
-      "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://cal.com/hanstudio/ops\nPayment for the monthly plan: https://pay.salesman.app/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
+      "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://example.invalid/consult/ops\nPayment for the monthly plan: https://example.invalid/pay/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
     replyChannel: "email",
     stage: "awaiting_approval",
     productId: "p_retain",
@@ -202,7 +202,7 @@ export const defaultLeads: Lead[] = [
       {
         role: "agent",
         text:
-          "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://cal.com/hanstudio/ops\nPayment for the monthly plan: https://pay.salesman.app/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
+          "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://example.invalid/consult/ops\nPayment for the monthly plan: https://example.invalid/pay/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
         at: hoursAgo(28),
       },
     ],
@@ -212,7 +212,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_missed_call",
     name: "Seorin Oh",
-    contact: "010-4412-9088",
+    contact: "demo-phone-02",
     channel: "phone",
     message: "Missed call twice. No voicemail left. They may have called while the studio was in a client session.",
     createdAt: hoursAgo(6),
@@ -237,7 +237,7 @@ export const defaultLeads: Lead[] = [
   {
     id: "ld_missed_msg",
     name: "Taeri Seo",
-    contact: "kakao:atelier.taeri",
+    contact: "demo-message-01",
     channel: "message",
     message:
       "Could you confirm whether the business-card proof can be ready today? I sent two messages yesterday but may have caught you during production. I have a client meeting tomorrow morning.",
