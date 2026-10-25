@@ -42,6 +42,7 @@ body:
     attributes:
       label: 시도한 흐름 / Scenario
       options:
+        - 선택하지 않음 / Not answered
         - 설치·실행 / Install and run
         - 문의·초안·승인 기록 / Inquiry, draft and approval record
         - 상품·정책 수정 / Offers and policies
@@ -54,6 +55,7 @@ body:
     attributes:
       label: 완료 여부 / Outcome
       options:
+        - 선택하지 않음 / Not answered
         - 완료 / Completed
         - 일부 완료 / Partly completed
         - 진행 불가 / Blocked
@@ -65,6 +67,7 @@ body:
     attributes:
       label: 다시 사용해 볼 의향 / Would try again
       options:
+        - 선택하지 않음 / Not answered
         - 있음 / Yes
         - 개선되면 / After improvements
         - 없음 / No
