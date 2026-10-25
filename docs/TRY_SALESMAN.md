@@ -78,6 +78,11 @@ Hi Demo Cafe Owner, thanks for your inquiry. The Brand Identity Package is KRW 1
 
 [체험 피드백 작성](https://github.com/brucedata/salesman-hackathon/issues/new?template=demo-feedback.yml)에서 완료한 단계, 걸린 시간, 막힌 부분과 수정하고 싶었던 문장을 알려 주세요. GitHub 로그인이 필요하며, 제출한 이슈는 공개됩니다.
 
+1. 제목을 적고, 개인정보·인증값을 제거한 뒤 **공개 제출 확인**을 체크합니다.
+2. **피드백** 본문에 실제 경험을 직접 적습니다. 입력칸의 회색 예시는 입력된 내용이 아닙니다. 설치 실패나 아직 사용하지 못한 상황도 그대로 적을 수 있습니다. 버전·업종·시도한 흐름·완료 여부·재사용 의향·실행 환경은 선택 사항이며, 모르면 비워 두거나 기본 선택을 유지해도 됩니다.
+3. 세 가지 데이터 이용 허락도 각각 선택 사항입니다. 한 건만 제출하려면 하단의 **Create more**를 해제하고 **Create**를 누릅니다.
+4. 이슈 주소(`/issues/번호`)로 이동하거나 **Issue #번호 created**가 나타나면 등록된 것입니다. **Create more**가 켜져 있으면 등록 후 새 빈 양식이 열립니다. 이때는 표시된 이슈 링크나 [이슈 목록](https://github.com/brucedata/salesman-hackathon/issues)에서 확인하고 같은 내용을 다시 등록하지 마세요.
+
 기억에 의존해 시간을 추정했다면 **추정**이라고 적어 주세요. 예시 초안을 고친 체험만으로 실제 고객 응대 시간 절약이나 매출 효과를 판단할 수는 없습니다. 스크린샷에는 가상 데이터만 포함하고, 고객 정보·개인 연락처·키·계정 정보는 올리지 마세요. 피드백은 선택 사항이며 자동 전송되지 않습니다.
 
 ## 선택 체험: 놓친 전화 메모
@@ -101,6 +106,8 @@ Hi Demo Cafe Owner, thanks for your inquiry. The Brand Identity Package is KRW 1
 | 처리한 문의가 수신함에서 안 보임 | **Inbox → All**을 선택합니다.                                                                                                                                   |
 | 예시 점수·문장이 계속 같음       | 기본 데모의 정상 동작입니다. 입력에 맞춘 실제 AI 추론을 제공하지 않습니다.                                                                                      |
 | 상담·결제 링크가 열리지 않음     | `example.invalid`는 체험용 주소입니다. 실제 결제나 예약은 제공하지 않습니다.                                                                                    |
+| 피드백의 Create가 작동하지 않음  | 제목·공개 제출 확인·피드백 본문을 확인합니다. 회색 예시는 입력값이 아니므로 본문을 직접 적어야 합니다. 빨간 필수 항목 안내가 있으면 해당 항목을 채웁니다.       |
+| Create 후 다시 빈 양식이 보임    | **Issue #번호 created**가 있다면 등록된 것입니다. **Create more**를 해제하고 표시된 이슈 링크나 이슈 목록에서 확인하세요.                                       |
 | 설치나 화면 오류가 계속됨        | [체험 피드백](https://github.com/brucedata/salesman-hackathon/issues/new?template=demo-feedback.yml)에 OS·Node 버전·단계·비밀을 지운 오류 메시지를 적어 주세요. |
 
 기능과 운영 한계는 [README](../README.md), 보안 문제의 비공개 제보 방법은 [SECURITY.md](../SECURITY.md)를 참고하세요.
