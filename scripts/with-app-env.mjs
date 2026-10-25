@@ -30,8 +30,8 @@ const VITE_PREFIX = "VITE_";
 
 /**
  * Parse an app-env document, keeping only `VITE_`-prefixed string entries.
- * Anything unparseable is an empty environment — a workspace without the file
- * must behave exactly like today (auth on, no overrides).
+ * Anything unparseable is an empty environment. The merge below supplies the
+ * public demo's auth-off default even when private platform files are absent.
  */
 export function parseAppEnv(text) {
   let parsed;
@@ -59,9 +59,9 @@ export function readAppEnv(root) {
   }
 }
 
-/** File values under the process environment: an explicit override wins. */
+/** Demo default, then file values, then an explicit process override. */
 export function mergeAppEnv(appEnv, processEnv) {
-  return { ...appEnv, ...processEnv };
+  return { VITE_AUTH_ENABLED: "false", ...appEnv, ...processEnv };
 }
 
 /** The workspace root (this file lives in `<root>/scripts/`). */
@@ -93,12 +93,15 @@ function main(argv) {
     process.exit(2);
   }
   const env = mergeAppEnv(readAppEnv(projectRoot()), process.env);
-  // npm exposes local binaries as `.cmd` shims on Windows.
-  const executable = process.platform === "win32" && command === "vite" ? "vite.cmd" : command;
-  const child = spawn(executable, args, {
+  // Run Vite's JS entry directly so Windows needs neither a .cmd shim nor a
+  // shell. Arbitrary child commands keep their argument boundaries intact.
+  const executable = command === "vite" ? process.execPath : command;
+  const commandArgs = command === "vite"
+    ? [fileURLToPath(new URL("bin/vite.js", import.meta.resolve("vite/package.json"))), ...args]
+    : args;
+  const child = spawn(executable, commandArgs, {
     stdio: "inherit",
     env,
-    shell: process.platform === "win32",
   });
   // The dev server is long-running and is stopped by signalling this wrapper.
   for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {

@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import test from "node:test";
+import test, { after } from "node:test";
 import {
   appNameFromHost,
-  createHeadInjector,
+  createHeadInjector as createHeadInjectorFromContext,
   grokXCreatorHeadTags,
-  injectGrokPwaHead,
+  injectGrokPwaHead as injectGrokPwaHeadFromContext,
   isDocumentPath,
   isInstallQuery,
   renderWebManifest,
@@ -18,6 +18,23 @@ import {
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const FIXTURE_ROOT = mkdtempSync(join(tmpdir(), "grok-pwa-test-"));
+
+// Generic platform behavior must not inherit this app's Salesman site.json or
+// custom card. Tests that exercise a filesystem identity supply their own cwd.
+function injectGrokPwaHead(html, context = {}) {
+  return injectGrokPwaHeadFromContext(html, { cwd: FIXTURE_ROOT, ...context });
+}
+
+function createHeadInjector(context = {}) {
+  return createHeadInjectorFromContext({ cwd: FIXTURE_ROOT, ...context });
+}
+
+after(() => {
+  assert.equal(dirname(resolve(FIXTURE_ROOT)), resolve(tmpdir()));
+  assert.ok(basename(FIXTURE_ROOT).startsWith("grok-pwa-test-"));
+  rmSync(FIXTURE_ROOT, { recursive: true, force: true });
+});
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
