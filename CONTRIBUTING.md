@@ -2,6 +2,8 @@
 
 Salesman은 1인 스튜디오의 문의 응대 흐름을 실험하는 해커톤 데모입니다. 버그 수정, 문서, 접근성, 테스트 개선에 기여할 수 있습니다. 큰 기능이나 새로운 외부 서비스 연결은 구현 전에 이슈로 범위를 맞춰 주세요.
 
+코드를 수정하지 않고도 [10분 체험](docs/TRY_SALESMAN.md) 후 [데모 사용 피드백](https://github.com/brucedata/salesman-hackathon/issues/new?template=demo-feedback.yml)을 남길 수 있습니다. 설치 실패와 불편한 점도 기여입니다. 제출 내용은 공개되며, 실제 문의·연락처·키를 포함하지 마세요. [이용 범위](docs/FEEDBACK_DATA_USE.md)와 [유지보수자의 실적 기록 기준](docs/ADOPTION_EVIDENCE.md)을 함께 확인하세요.
+
 ## 개발 시작
 
 1. 저장소를 fork하고 작업 브랜치를 만듭니다.

@@ -1,0 +1,111 @@
+name: 데모 사용 피드백 / Demo feedback
+description: 키 없는 데모를 직접 사용한 결과, 설치 실패, 개선 의견을 남겨 주세요.
+title: "[Demo feedback] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        [10분 체험 가이드](https://github.com/brucedata/salesman-hackathon/blob/main/docs/TRY_SALESMAN.md)를 따라 사용한 결과를 알려 주세요. 설치 실패도 유용한 피드백입니다.
+        **이 이슈와 GitHub 계정명은 인터넷에 공개됩니다.** 실제 고객 문의·연락처·녹음·API 키·전체 로그·브라우저 저장소를 올리지 마세요. 가상 예시만 사용하세요.
+        데모는 예시 응답과 로컬 저장을 사용하며 실제 발송·유료 API 호출을 제공하지 않습니다.
+        아래 세 선택적 허락은 각각 독립적입니다. 체크하지 않아도 사용·피드백 처리에 불이익이 없습니다. [이용 범위와 철회 방법](https://github.com/brucedata/salesman-hackathon/blob/main/docs/FEEDBACK_DATA_USE.md) (v1, 2026-10-25).
+  - type: checkboxes
+    id: public-safety
+    attributes:
+      label: 공개 제출 확인 / Public submission
+      options:
+        - label: 이슈와 계정명이 공개됨을 이해했고, 고객 개인정보·인증값·비공개 자료를 제거했습니다.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: 사용한 커밋 또는 버전 / Version
+      description: git rev-parse --short HEAD 결과 또는 확인하지 못함. 파일 경로나 계정 정보는 쓰지 마세요.
+      placeholder: 커밋 SHA 또는 확인하지 못함
+    validations:
+      required: true
+  - type: dropdown
+    id: industry
+    attributes:
+      label: 업종 / Industry
+      description: 개인·회사 이름 대신 넓은 분류를 선택하세요. 답변하지 않아도 됩니다.
+      options:
+        - 답변하지 않음 / Prefer not to say
+        - 디자인 스튜디오 / Design studio
+        - 개발·제작 프리랜서 / Development freelance
+        - 콘텐츠·마케팅 / Content and marketing
+        - 기타 / Other
+    validations:
+      required: true
+  - type: dropdown
+    id: scenario
+    attributes:
+      label: 시도한 흐름 / Scenario
+      options:
+        - 설치·실행 / Install and run
+        - 문의·초안·승인 기록 / Inquiry, draft and approval record
+        - 상품·정책 수정 / Offers and policies
+        - Architect 로컬 파이프라인 / Local Architect pipeline
+        - 기타 / Other
+    validations:
+      required: true
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: 완료 여부 / Outcome
+      options:
+        - 완료 / Completed
+        - 일부 완료 / Partly completed
+        - 진행 불가 / Blocked
+        - 설치·실행 실패 / Could not install or start
+    validations:
+      required: true
+  - type: dropdown
+    id: use-again
+    attributes:
+      label: 다시 사용해 볼 의향 / Would try again
+      options:
+        - 있음 / Yes
+        - 개선되면 / After improvements
+        - 없음 / No
+        - 판단하기 어려움 / Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: 가장 유용했던 점 또는 막힌 한 가지 / Feedback
+      description: 시도한 단계, 기대한 결과, 실제 결과를 가상 예시로 설명해 주세요. 사용하지 않았다면 그 사실을 적어 주세요.
+      placeholder: 예시 문의를 만든 뒤 초안을 열었지만 다음 버튼의 의미를 알기 어려웠습니다.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 실행 환경 / Environment (optional)
+      description: OS·브라우저·Node 버전만 적어 주세요. 사용자명·로컬 파일 경로·전체 로그는 제외하세요.
+      placeholder: Windows, Chrome, Node 22.x
+  - type: checkboxes
+    id: evidence-consent
+    attributes:
+      label: 선택 — 신청 근거용 집계 / Optional evidence aggregate permission
+      description: 유지보수자 brucedata가 제출일부터 12개월 동안 업종·시도한 흐름·완료 여부·재사용 의향 네 항목을 별도 작업본으로 정리하여 프로젝트 개선 보고와 Claude for Open Source 신청의 익명 집계에 쓰는 것을 허락할 수 있습니다. 식별 위험이 있는 집계는 공개하지 않으며, 공란은 허락하지 않음입니다.
+      options:
+        - label: 위 범위의 신청 근거용 집계를 허락합니다. 상업 통계나 개별 사례 인용 허락과는 별개입니다.
+          required: false
+  - type: checkboxes
+    id: public-case-permission
+    attributes:
+      label: 선택 — 공개 사용 사례 인용 / Optional public case permission
+      description: 유지보수자 brucedata가 제출일부터 12개월 동안 프로젝트 소개와 Claude for Open Source 신청에 공개 이슈 링크·계정명·비밀을 제거한 짧은 의견을 인용하는 것을 허락할 수 있습니다. 공란은 허락하지 않음입니다.
+      options:
+        - label: 위 범위의 사용 사례 인용을 허락합니다. 사용 실적이나 선정 여부를 보장하는 의미는 아닙니다.
+          required: false
+  - type: checkboxes
+    id: aggregate-commercial-permission
+    attributes:
+      label: 선택 — 상업 통계 이용 / Optional commercial aggregate permission
+      description: 유지보수자 brucedata가 제출일부터 12개월 동안 업종·시도한 흐름·완료 여부·재사용 의향 네 항목만 별도 작업본으로 정리하여, 식별 위험을 검토한 집계 통계를 무료·유료 리포트에 사용하는 것을 허락할 수 있습니다. 계정명·이슈 링크·자유서술·고객 데이터는 통계 상품에 넣지 않습니다. 공란은 허락하지 않음이며, 체크만으로 익명성이나 판매 가능성이 확인되는 것은 아닙니다.
+      options:
+        - label: 위 네 항목의 선택적 상업 집계 이용을 허락합니다. 이슈 댓글로 향후 이용 철회를 요청할 수 있고, 이미 배포된 리포트의 회수는 보장되지 않음을 확인했습니다.
+          required: false
