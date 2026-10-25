@@ -1,5 +1,16 @@
 {
-  "name": "app-builder-workspace",
+  "name": "salesman-hackathon",
+  "description": "An approval-first sales workspace for solo businesses, with a keyless local demo.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brucedata/salesman-hackathon.git"
+  },
+  "bugs": "https://github.com/brucedata/salesman-hackathon/issues",
+  "homepage": "https://github.com/brucedata/salesman-hackathon#readme",
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -14,7 +25,7 @@
     "preview": "node scripts/with-app-env.mjs vite preview",
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
-    "test": "node --test 'scripts/**/*.test.mjs'",
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
