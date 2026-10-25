@@ -16,6 +16,7 @@
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { OG_SITE_REL_PATH, readOgSite, siteHasCustomCard } from "./grok-pwa-shared.mjs";
+import { projectRoot } from "./with-app-env.mjs";
 
 // Over this, link scrapers (X card previews included) time out or skip the
 // image, so the card silently fails to unfurl. The og skill's JPEG contract
@@ -26,7 +27,7 @@ export function siteDeclaresOgTypeGame(site) {
   return String(site?.type ?? "").toLowerCase() === "x:game";
 }
 
-export function computeBrandWarnings({ hasCanvas, workspaceRoot = "/workspace" }) {
+export function computeBrandWarnings({ hasCanvas, workspaceRoot = projectRoot() }) {
   const skillPath = join(workspaceRoot, ".grok/skills/og/SKILL.md");
   const sitePath = join(workspaceRoot, OG_SITE_REL_PATH);
   const site = readOgSite(workspaceRoot);
