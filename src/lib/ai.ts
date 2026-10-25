@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { chatComplete } from "./provider";
+import { paidProvidersEnabled } from "./provider-policy";
 
 const draftInput = z.object({
   companyName: z.string(),
@@ -129,6 +130,10 @@ const transcribeInput = z.object({
 export const transcribeVoice = createServerFn({ method: "POST" })
   .validator((input: unknown) => transcribeInput.parse(input))
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
+    if (!paidProvidersEnabled()) {
+      return { ok: false, error: "Speech transcription is disabled in this safe demo. Use a text or sample note instead." };
+    }
+
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) {
       return { ok: false, error: "Speech transcription is not configured for this environment." };

@@ -155,7 +155,7 @@ function Home() {
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="text-center text-3xl">An agent pipeline built on your infrastructure</h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted">
-            Provider keys switch the corresponding step live. Without them, the same sequence runs in a local fallback for this demo.
+            The public demo uses sample responses and local checks. Optional provider integrations are available only in a separately configured, self-hosted environment.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[

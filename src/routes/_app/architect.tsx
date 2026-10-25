@@ -75,7 +75,7 @@ function ArchitectPage() {
       <header className="mb-6">
         <h1 className="text-3xl md:text-4xl">Architect</h1>
         <p className="mt-1 text-sm text-muted">
-          Bright Data collects, Qwen drafts, Nosana scores, and Daytona checks policy when those providers are configured. Without credentials, the visible fallback runs the same sequence locally.
+          The public demo uses the selected sample signal, sample drafts, and local policy checks. External collection and paid services are disabled here. Optional integrations require a separately configured, self-hosted environment.
         </p>
       </header>
 
@@ -120,7 +120,7 @@ function ArchitectPage() {
             </select>
           </div>
           <div>
-            <Label htmlFor="url">Public URL (optional, for Bright Data collection)</Label>
+            <Label htmlFor="url">Public URL (optional; ignored in the public demo)</Label>
             <Input id="url" value={url} placeholder="https://" onChange={(event) => setUrl(event.target.value)} />
           </div>
           <p className="text-xs text-faint">{target?.signal}</p>

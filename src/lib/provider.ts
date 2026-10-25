@@ -1,3 +1,5 @@
+import { paidProvidersEnabled } from "./provider-policy";
+
 export type ChatMessage = {
   role: "system" | "user";
   content: string;
@@ -65,6 +67,10 @@ export async function chatComplete(
   maxTokens: number,
   options: ChatOptions = {},
 ): Promise<ChatResult> {
+  if (!paidProvidersEnabled()) {
+    return { ok: true, text: localDemoResponse(messages, Boolean(options.json)), provider: "local" };
+  }
+
   const qwenKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   let qwenError = "";
 

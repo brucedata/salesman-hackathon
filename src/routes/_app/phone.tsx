@@ -120,7 +120,7 @@ function PhonePage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-3xl md:text-4xl">Missed contact</h1>
       <p className="mt-2 text-sm text-muted">
-        Capture missed calls, voice notes, and messages as text while you work. This demo does not place or receive carrier calls.
+        Capture missed calls, voice notes, and messages as text while you work. The public demo does not place calls or send recordings for transcription; use typed notes or a sample instead.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2">

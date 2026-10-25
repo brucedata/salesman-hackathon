@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { chatComplete as providerChatComplete } from "./provider";
+import { paidProvidersEnabled } from "./provider-policy";
 
 export type ProviderId = "brightdata" | "qwen" | "nosana" | "daytona";
 
@@ -13,7 +14,7 @@ export type ProviderStatus = {
 };
 
 function envOn(...keys: string[]) {
-  return keys.some((key) => Boolean(process.env[key]?.trim()));
+  return paidProvidersEnabled() && keys.some((key) => Boolean(process.env[key]?.trim()));
 }
 
 export const getInfraStatus = createServerFn({ method: "GET" }).handler(
@@ -23,14 +24,14 @@ export const getInfraStatus = createServerFn({ method: "GET" }).handler(
       name: "Bright Data",
       role: "Web collection, competitor pages, and signals",
       live: envOn("BRIGHTDATA_API_TOKEN", "BRIGHT_DATA_API_KEY", "BRIGHTDATA_API_KEY"),
-      fallback: "Direct server-side fetch of public URLs",
+      fallback: paidProvidersEnabled() ? "Direct server-side fetch of public URLs" : "Observed signal only; URL collection disabled",
     },
     {
       id: "qwen",
       name: "Qwen",
       role: "English drafts and personalization",
       live: envOn("DASHSCOPE_API_KEY", "QWEN_API_KEY"),
-      fallback: "Grok or local demo response",
+      fallback: paidProvidersEnabled() ? "Grok or local demo response" : "Local demo response; external models disabled",
     },
     {
       id: "nosana",
@@ -40,7 +41,7 @@ export const getInfraStatus = createServerFn({ method: "GET" }).handler(
         envOn("NOSANA_API_KEY", "NOSANA_API_TOKEN") &&
         envOn("NOSANA_MARKET") &&
         envOn("NOSANA_SCORE_IMAGE", "NOSANA_GPU_IMAGE"),
-      fallback: "Qwen, Grok, or local scoring",
+      fallback: paidProvidersEnabled() ? "Qwen, Grok, or local scoring" : "Local demo scoring; GPU and IPFS disabled",
     },
     {
       id: "daytona",
@@ -106,6 +107,10 @@ function collectSignals(raw: string): Omit<CollectedPage, "via"> {
 }
 
 async function collectPage(url: string): Promise<CollectedPage> {
+  if (!paidProvidersEnabled()) {
+    throw new Error("URL collection is disabled in this safe demo.");
+  }
+
   const token =
     process.env.BRIGHTDATA_API_TOKEN ||
     process.env.BRIGHT_DATA_API_KEY ||
@@ -156,6 +161,8 @@ function policySandbox(draft: string, doNot: string[]) {
 type PolicyResult = ReturnType<typeof policySandbox> & { via: string };
 
 async function runDaytonaPolicy(draft: string, doNot: string[]): Promise<PolicyResult> {
+  if (!paidProvidersEnabled()) return { ...policySandbox(draft, doNot), via: "isolate" };
+
   const token = process.env.DAYTONA_API_KEY || process.env.DAYTONA_API_TOKEN;
   if (!token) return { ...policySandbox(draft, doNot), via: "isolate" };
 
@@ -259,6 +266,8 @@ async function runNosanaScore(input: {
   intel: string;
   draft: string;
 }): Promise<NosanaScore | null> {
+  if (!paidProvidersEnabled()) return null;
+
   const apiKey = process.env.NOSANA_API_KEY || process.env.NOSANA_API_TOKEN;
   const market = process.env.NOSANA_MARKET;
   const image = process.env.NOSANA_SCORE_IMAGE || process.env.NOSANA_GPU_IMAGE;
@@ -365,7 +374,7 @@ export const runArchitect = createServerFn({ method: "POST" })
     let intel = data.signal;
     const collectionStartedAt = Date.now();
     try {
-      if (data.url?.startsWith("http")) {
+      if (paidProvidersEnabled() && data.url?.startsWith("http")) {
         const page = await collectPage(data.url);
         const signals = [
           page.title ? `Title: ${page.title}` : "",
@@ -390,7 +399,9 @@ export const runArchitect = createServerFn({ method: "POST" })
           via: "inbox-signal",
           ms: Date.now() - collectionStartedAt,
           ok: true,
-          detail: "Used the selected target's observed signal.",
+          detail: paidProvidersEnabled()
+            ? "Used the selected target's observed signal."
+            : "Safe demo: URL collection disabled; used the selected target's observed signal.",
         });
       }
     } catch (error) {
