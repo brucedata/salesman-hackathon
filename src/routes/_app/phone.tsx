@@ -14,14 +14,14 @@ export const Route = createFileRoute("/_app/phone")({ component: PhonePage });
 const samples = [
   {
     name: "Seorin Oh",
-    contact: "010-2209-1183",
+    contact: "demo-phone-03",
     channel: "phone" as Channel,
     message:
       "Hello, I run a craft studio in Mapo. We have a market next month and need packaging and business cards quickly. A full identity package may be too much; could you let me know by message whether a fast logo-only option is possible?",
   },
   {
     name: "Taeho Ryu",
-    contact: "010-8831-0021",
+    contact: "demo-phone-04",
     channel: "phone" as Channel,
     message:
       "I need a landing page urgently. Ad spend starts this week. Please send the fastest delivery window and price for a page that includes checkout.",
