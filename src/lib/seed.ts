@@ -30,8 +30,8 @@ export const defaultProducts: Product[] = [
       "Usage guide PDF",
     ],
     slug: "identity",
-    consultUrl: "https://cal.com/hanstudio/30min",
-    paymentUrl: "https://pay.salesman.app/identity",
+    consultUrl: "https://example.invalid/consult/30min",
+    paymentUrl: "https://example.invalid/pay/identity",
   },
   {
     id: "p_landing",
@@ -46,8 +46,8 @@ export const defaultProducts: Product[] = [
       "One revision round within 14 days",
     ],
     slug: "landing",
-    consultUrl: "https://cal.com/hanstudio/30min",
-    paymentUrl: "https://pay.salesman.app/landing",
+    consultUrl: "https://example.invalid/consult/30min",
+    paymentUrl: "https://example.invalid/pay/landing",
   },
   {
     id: "p_retain",
@@ -58,8 +58,8 @@ export const defaultProducts: Product[] = [
       "Four content pieces, inquiry-response drafts, and a monthly report for teams that need a steady creative partner.",
     benefits: ["Four content pieces", "Inquiry-draft review", "One monthly check-in", "Performance report"],
     slug: "retainer",
-    consultUrl: "https://cal.com/hanstudio/ops",
-    paymentUrl: "https://pay.salesman.app/retainer",
+    consultUrl: "https://example.invalid/consult/ops",
+    paymentUrl: "https://example.invalid/pay/retainer",
   },
 ];
 
@@ -188,7 +188,7 @@ export const defaultLeads: Lead[] = [
     nextAction: "Share the first-month scope and retainer terms through a short consultation link.",
     reasons: ["Clear decision owner", "Existing brand system", "Monthly need is defined"],
     draft:
-      "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://cal.com/hanstudio/ops\nPayment for the monthly plan: https://pay.salesman.app/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
+      "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://example.invalid/consult/ops\nPayment for the monthly plan: https://example.invalid/pay/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
     replyChannel: "email",
     stage: "awaiting_approval",
     productId: "p_retain",
@@ -202,7 +202,7 @@ export const defaultLeads: Lead[] = [
       {
         role: "agent",
         text:
-          "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://cal.com/hanstudio/ops\nPayment for the monthly plan: https://pay.salesman.app/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
+          "Hi Eunji, thanks for reaching out to Han Studio.\n\nMonthly Studio Support includes four content pieces, inquiry-response drafts, and a monthly report. We can begin from your existing style guide and use the first month to align the operating scope.\n\nThe monthly fee is KRW 450,000. We confirm the next month after reviewing the delivered scope for the current month.\n\nYou can choose a 30-minute consultation here: https://example.invalid/consult/ops\nPayment for the monthly plan: https://example.invalid/pay/retainer\n\nPlease send two or three times that work for you, and I will confirm one promptly.",
         at: hoursAgo(28),
       },
     ],
